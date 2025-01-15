@@ -1,4 +1,35 @@
-/vendor/
-node_modules/
+.vscode/
+node_modules
+build
+npm-debug.log
 .DS_Store
+*.DS_Store
+.idea
+debug.log
+vendor
+phpcs-report.txt
+.phpunit.result.cache
+*.code-workspace
+.env
+composer.lock
+package-lock.json
 
+#php related files
+phpunit-wp-config.php
+**/phpunit-wp-config.php
+
+# js related files
+dist/
+build/
+bundle.js
+bundle.js.*
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+jspm_packages/
+typings/
+.npm/
+.eslintcache
+.yarn-integrity
+.node_repl_history
