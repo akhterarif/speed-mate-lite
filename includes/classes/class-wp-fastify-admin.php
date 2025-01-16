@@ -5,12 +5,22 @@ namespace WP_Fastify;
 class WP_Fastify_Admin {
 
     public function __construct() {
+        $this->load_dependencies();
+        $this->call_hooks();
+    }
+
+    public function call_hooks() {
         add_action('admin_menu', [ $this, 'add_settings_page' ]);
         add_action('admin_init', [ $this, 'register_settings' ]);
         add_action('admin_init', [ $this, 'update_htaccess_based_on_setting' ]);
         // Loading the minified files in the site 
-        add_filter('script_loader_src', [ $this, 'minify_assets' ], 10, 2);
-        add_filter('style_loader_src', [ $this, 'minify_assets' ], 10, 2);
+        add_filter('script_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
+        add_filter('style_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
+    }
+
+    // Load dependencies (e.g., the minifier class)
+    public function load_dependencies() {
+        require_once plugin_dir_path( __FILE__ ) . '../classes/class-wp-fastify-minifier.php';
     }
 
     public function add_settings_page() {
@@ -152,39 +162,52 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
 
     // Apply minification to enqueued CSS/JS files
     public function minify_assets($src, $handle) {
-        error_log(wp_json_encode($src));
         $enable_minification = get_option('wp_fastify_asset_optimization_enable_minification', 0);
+    
+        // Proceed only if minification is enabled and the file is not already minified
         if ($enable_minification && strpos($src, '.min.') === false) {
-            // Remove query string from the file path
+            // Parse the file URL to remove query strings and get the path
             $parsed_url = parse_url($src);
-            // Replace site URL with the absolute path (ABSPATH)
             $file_path = isset($parsed_url['path']) ? ABSPATH . ltrim($parsed_url['path'], '/') : '';
-
-            // Remove any extra slashes that might result from the replacement
+            
+            // Normalize the file path to avoid extra slashes
             $file_path = preg_replace('#/+#', '/', $file_path);
     
-            // Check if the file exists and process it
+            // Log for debugging purposes
+            error_log(wp_json_encode("Processing file path: {$file_path}"));
+    
+            // Check if the file exists
             if (file_exists($file_path)) {
                 $content = file_get_contents($file_path);
                 $ext = pathinfo($file_path, PATHINFO_EXTENSION);
     
-                // Minify content
-                $minified_content = $this->minify_content($content, $ext);
+                // Only process CSS and JS files
+                if (in_array($ext, ['css', 'js'])) {
+                    // Minify the content
+                    $minified_content = $this->minify_content($content, $ext);
     
-                // Create the minified file path by appending '.min'
-                $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
+                    // Generate the path for the minified file
+                    $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
     
-                // Save the minified file
-                file_put_contents($minified_path, $minified_content);
+                    // Save the minified content to the new file
+                    file_put_contents($minified_path, $minified_content);
     
-                // Return the URL of the minified file
-                return str_replace(ABSPATH, site_url('/'), $minified_path);
+                    // Log the creation of the minified file
+                    error_log(wp_json_encode("Minified file created: {$minified_path}"));
+    
+                    // Return the URL of the minified file
+                    return str_replace(ABSPATH, site_url('/'), $minified_path);
+                }
             } else {
                 error_log(wp_json_encode("File does not exist: {$file_path}"));
             }
         }
+    
+        // Return the original source URL if minification is not applicable
         return $src;
     }
+    
+    
     
     
 

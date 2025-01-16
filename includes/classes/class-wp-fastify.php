@@ -5,11 +5,19 @@ namespace WP_Fastify;
 class WP_Fastify {
     public function __construct() {
         $this->load_dependencies();
+        $this->call_hooks();
+    }
+
+    public function call_hooks() {
+        // Loading the minified files in the site 
+        add_filter('script_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
+        add_filter('style_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
     }
 
     // Load dependencies (e.g., the cache class)
     public function load_dependencies() {
         require_once plugin_dir_path( __FILE__ ) . '../classes/class-wp-fastify-cache.php';
+        require_once plugin_dir_path( __FILE__ ) . '../classes/class-wp-fastify-minifier.php';
     }
 
     // Initialize the caching functionality
