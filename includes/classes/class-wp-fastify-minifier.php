@@ -23,9 +23,6 @@ class WP_Fastify_Minifier {
             // Normalize the file path to avoid extra slashes
             $file_path = preg_replace('#/+#', '/', $file_path);
 
-            // Log for debugging purposes
-            error_log(wp_json_encode("Processing file path: {$file_path}"));
-
             // Check if the file exists
             if (file_exists($file_path)) {
                 $content = file_get_contents($file_path);
@@ -41,9 +38,6 @@ class WP_Fastify_Minifier {
 
                     // Save the minified content to the new file
                     file_put_contents($minified_path, $minified_content);
-
-                    // Log the creation of the minified file
-                    error_log(wp_json_encode("Minified file created: {$minified_path}"));
 
                     // Return the URL of the minified file
                     return str_replace(ABSPATH, site_url('/'), $minified_path);
@@ -75,5 +69,16 @@ class WP_Fastify_Minifier {
 
         // Return unmodified content if the type is unsupported
         return $content;
+    }
+
+
+    public static function minify_html($html) {
+        // Remove comments (excluding conditional comments for IE)
+        $html = preg_replace('/<!--(?!\[if).*?-->/', '', $html);
+        // Remove whitespace between tags
+        $html = preg_replace('/>\s+</', '><', $html);
+        // Remove unnecessary whitespace
+        $html = preg_replace('/\s+/', ' ', $html);
+        return $html;
     }
 }

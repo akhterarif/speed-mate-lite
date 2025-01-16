@@ -45,6 +45,7 @@ class WP_Fastify_Admin {
 
         // Asset Optimization settings
         register_setting('wp_fastify_asset_optimization_options', 'wp_fastify_asset_optimization_enable_minification');
+        register_setting('wp_fastify_asset_optimization_options', 'wp_fastify_asset_optimization_enable_html_minification');
     }
 
     public function render_settings_page() {
@@ -141,76 +142,17 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
                     <label for="wp_fastify_asset_optimization_enable_minification">Minify CSS and JS files to reduce file sizes by removing unnecessary spaces and comments.</label>
                 </td>
             </tr>
-        </table>
+            <tr valign="top">
+                <th scope="row">Enable HTML Minification</th>
+                <td>
+                    <input type="checkbox" name="wp_fastify_asset_optimization_enable_html_minification" value="1" 
+                    <?php checked(1, get_option('wp_fastify_asset_optimization_enable_html_minification', 0)); ?> />
+                    <label for="wp_fastify_asset_optimization_enable_html_minification">Minify HTML files to reduce file sizes and Simplifies HTML files for faster loading.</label>
+                </td>
+            </tr>
+            </table>
         <?php
     }
-
-    // Minification logic
-    private function minify_content($content, $type = 'css') {
-        if ($type === 'css') {
-            $content = preg_replace('!/\*.*?\*/!s', '', $content); // Remove comments
-            $content = preg_replace('/\s*([{}|:;,])\s+/', '$1', $content); // Remove spaces
-            $content = preg_replace('/\s\s+/', ' ', $content); // Reduce multiple spaces
-        } elseif ($type === 'js') {
-            $content = preg_replace('/\/\/.*?\n|\/\*.*?\*\//s', '', $content); // Remove comments
-            $content = preg_replace('/\s*([{}|:;,])\s+/', '$1', $content); // Remove spaces
-            $content = preg_replace('/\s\s+/', ' ', $content); // Reduce multiple spaces
-        }
-
-        return trim($content);
-    }
-
-    // Apply minification to enqueued CSS/JS files
-    public function minify_assets($src, $handle) {
-        $enable_minification = get_option('wp_fastify_asset_optimization_enable_minification', 0);
-    
-        // Proceed only if minification is enabled and the file is not already minified
-        if ($enable_minification && strpos($src, '.min.') === false) {
-            // Parse the file URL to remove query strings and get the path
-            $parsed_url = parse_url($src);
-            $file_path = isset($parsed_url['path']) ? ABSPATH . ltrim($parsed_url['path'], '/') : '';
-            
-            // Normalize the file path to avoid extra slashes
-            $file_path = preg_replace('#/+#', '/', $file_path);
-    
-            // Log for debugging purposes
-            error_log(wp_json_encode("Processing file path: {$file_path}"));
-    
-            // Check if the file exists
-            if (file_exists($file_path)) {
-                $content = file_get_contents($file_path);
-                $ext = pathinfo($file_path, PATHINFO_EXTENSION);
-    
-                // Only process CSS and JS files
-                if (in_array($ext, ['css', 'js'])) {
-                    // Minify the content
-                    $minified_content = $this->minify_content($content, $ext);
-    
-                    // Generate the path for the minified file
-                    $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
-    
-                    // Save the minified content to the new file
-                    file_put_contents($minified_path, $minified_content);
-    
-                    // Log the creation of the minified file
-                    error_log(wp_json_encode("Minified file created: {$minified_path}"));
-    
-                    // Return the URL of the minified file
-                    return str_replace(ABSPATH, site_url('/'), $minified_path);
-                }
-            } else {
-                error_log(wp_json_encode("File does not exist: {$file_path}"));
-            }
-        }
-    
-        // Return the original source URL if minification is not applicable
-        return $src;
-    }
-    
-    
-    
-    
-
 
     public function update_htaccess_based_on_setting() {
         $enable_static_caching = get_option('wp_fastify_caching_enable_static_caching');
