@@ -46,6 +46,7 @@ class WP_Fastify_Admin {
         // Asset Optimization settings
         register_setting('wp_fastify_asset_optimization_options', 'wp_fastify_asset_optimization_enable_minification');
         register_setting('wp_fastify_asset_optimization_options', 'wp_fastify_asset_optimization_enable_html_minification');
+        register_setting('wp_fastify_asset_optimization_options', 'wp_fastify_asset_optimization_enable_image_lazy_loading');
     }
 
     public function render_settings_page() {
@@ -150,7 +151,15 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
                     <label for="wp_fastify_asset_optimization_enable_html_minification">Minify HTML files to reduce file sizes and Simplifies HTML files for faster loading.</label>
                 </td>
             </tr>
-            </table>
+            <tr valign="top">
+                <th scope="row">Enable Lazy Loading for Images</th>
+                <td>
+                    <input type="checkbox" name="wp_fastify_asset_optimization_enable_image_lazy_loading" value="1" 
+                    <?php checked(1, get_option('wp_fastify_asset_optimization_enable_image_lazy_loading', 0)); ?> />
+                    <label for="wp_fastify_asset_optimization_enable_image_lazy_loading">Loads images as users scroll.</label>
+                </td>
+            </tr>
+        </table>
         <?php
     }
 

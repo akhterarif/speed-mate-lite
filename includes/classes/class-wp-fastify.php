@@ -17,6 +17,9 @@ class WP_Fastify {
         // Add the HTML Minification functionality
         add_action('template_redirect', [ $this, 'start_html_minification' ]);
         add_action('shutdown', [ $this, 'end_html_minification' ], 0);
+
+        // Add Lazy Loading for Images
+        add_filter('the_content', [ $this, 'apply_lazy_loading_to_images' ]);
     }
 
     // Load dependencies (e.g., Cache and Minifier classes)
@@ -74,5 +77,33 @@ class WP_Fastify {
         if (ob_get_length()) {
             ob_end_flush();
         }
+    }
+
+
+    // Enables lazy loading for images 
+    public function apply_lazy_loading_to_images($content) {
+        $enable_lazy_loading = get_option('wp_fastify_asset_optimization_enable_html_minification', 0);
+
+        // Apply lazy loading only if the setting is enabled
+        if ($enable_lazy_loading) {
+            $content = preg_replace_callback(
+                '/<img\s+[^>]*>/i',
+                function ($matches) {
+                    $img = $matches[0];
+
+                    // Skip if the image already has a loading attribute
+                    if (strpos($img, 'loading=') !== false) {
+                        return $img;
+                    }
+
+                    // Add the lazy loading attribute
+                    $img = preg_replace('/<img\s+/i', '<img loading="lazy" ', $img);
+                    return $img;
+                },
+                $content
+            );
+        }
+
+        return $content;
     }
 }

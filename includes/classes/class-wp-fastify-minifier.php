@@ -12,44 +12,35 @@ class WP_Fastify_Minifier {
      * @return string Minified asset URL or original URL if minification isn't applied.
      */
     public static function minify_assets($src, $handle) {
-        $enable_minification = get_option('wp_fastify_asset_optimization_enable_minification', 0);
+    $enable_minification = get_option('wp_fastify_asset_optimization_enable_minification', 0);
 
-        // Proceed only if minification is enabled and the file is not already minified
-        if ($enable_minification && strpos($src, '.min.') === false) {
-            // Parse the file URL to remove query strings and get the path
-            $parsed_url = parse_url($src);
-            $file_path = isset($parsed_url['path']) ? ABSPATH . ltrim($parsed_url['path'], '/') : '';
-            
-            // Normalize the file path to avoid extra slashes
-            $file_path = preg_replace('#/+#', '/', $file_path);
-
-            // Check if the file exists
-            if (file_exists($file_path)) {
-                $content = file_get_contents($file_path);
-                $ext = pathinfo($file_path, PATHINFO_EXTENSION);
-
-                // Only process CSS and JS files
-                if (in_array($ext, ['css', 'js'])) {
-                    // Minify the content
-                    $minified_content = self::minify_content($content, $ext);
-
-                    // Generate the path for the minified file
-                    $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
-
-                    // Save the minified content to the new file
-                    file_put_contents($minified_path, $minified_content);
-
-                    // Return the URL of the minified file
-                    return str_replace(ABSPATH, site_url('/'), $minified_path);
-                }
-            } else {
-                error_log(wp_json_encode("File does not exist: {$file_path}"));
-            }
-        }
-
-        // Return the original source URL if minification is not applicable
+    // Skip minification for admin pages or excluded handles
+    if (is_admin() || in_array($handle, ['wp-edit-post', 'wp-block-editor', 'wp-blocks', 'wp-components'])) {
         return $src;
     }
+
+    if ($enable_minification && strpos($src, '.min.') === false) {
+        $parsed_url = parse_url($src);
+        $file_path = isset($parsed_url['path']) ? ABSPATH . ltrim($parsed_url['path'], '/') : '';
+        $file_path = preg_replace('#/+#', '/', $file_path);
+
+        if (file_exists($file_path)) {
+            $content = file_get_contents($file_path);
+            $ext = pathinfo($file_path, PATHINFO_EXTENSION);
+
+            if (in_array($ext, ['css', 'js'])) {
+                $minified_content = WP_Fastify_Minifier::minify_content($content, $ext);
+                $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
+
+                file_put_contents($minified_path, $minified_content);
+
+                return str_replace(ABSPATH, site_url('/'), $minified_path);
+            }
+        }
+    }
+
+    return $src;
+}
 
     /**
      * Minify the content of CSS or JS files.
