@@ -6,10 +6,10 @@ class WP_Fastify {
 
     public function __construct() {
         $this->load_dependencies();
-        $this->call_hooks();
+        $this->register_hooks();
     }
 
-    public function call_hooks() {
+    public function register_hooks() {
         // Minify CSS and JS files
         add_filter('script_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
         add_filter('style_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
@@ -61,8 +61,6 @@ class WP_Fastify {
     // Start HTML Minification
     public function start_html_minification() {
         $enable_html_minification = get_option('wp_fastify_asset_optimization_enable_html_minification', 0);
-        error_log(wp_json_encode("{$enable_html_minification}"));
-
 
         // Apply HTML minification only if enabled and not on admin pages
         if ($enable_html_minification && !is_admin() && $_SERVER['REQUEST_METHOD'] === 'GET') {

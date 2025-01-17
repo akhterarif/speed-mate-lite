@@ -6,16 +6,54 @@ class WP_Fastify_Admin {
 
     public function __construct() {
         $this->load_dependencies();
-        $this->call_hooks();
+        $this->register_hooks();
     }
 
-    public function call_hooks() {
+    public function register_hooks() {
         add_action('admin_menu', [ $this, 'add_settings_page' ]);
         add_action('admin_init', [ $this, 'register_settings' ]);
         add_action('admin_init', [ $this, 'update_htaccess_based_on_setting' ]);
+        add_action('admin_post_wp_fastify_run_cleanup', [ $this, 'handle_manual_cleanup' ]); // Add this line
+
         // Loading the minified files in the site 
         add_filter('script_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
         add_filter('style_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
+
+        // Schedule cleanup task
+        add_action('wp', function () {
+            if (!wp_next_scheduled('wp_fastify_revisions_cleanup_cron') && get_option('wp_fastify_revisions_cleanup_enable', 0)) {
+                $schedule = get_option('wp_fastify_revisions_cleanup_schedule', 'weekly');
+                wp_schedule_event(time(), $schedule, 'wp_fastify_revisions_cleanup_cron');
+            }
+        });
+
+        // Perform the cleanup
+        add_action('wp_fastify_revisions_cleanup_cron', [$this, 'wp_fastify_cleanup_revisions']);
+
+        // Clear scheduled task when disabling
+        add_action('update_option_wp_fastify_revisions_cleanup_enable', function ($old_value, $value) {
+            if (!$value) {
+                wp_clear_scheduled_hook('wp_fastify_revisions_cleanup_cron');
+            }
+        }, 10, 2);
+
+        add_action('admin_footer', function () {
+            if (isset($_POST['wp_fastify_revisions_cleanup_manual'])) {
+                check_admin_referer('wp_fastify_revisions_cleanup_manual_action');
+                $this->wp_fastify_cleanup_revisions();
+                add_settings_error('wp_fastify', 'manual_cleanup', 'Revisions cleanup executed successfully.', 'updated');
+            }
+        });
+        
+        add_action('wp_fastify_settings_page', function () {
+            echo '<form method="post" action="">';
+            wp_nonce_field('wp_fastify_revisions_cleanup_manual_action');
+            echo '<input type="submit" name="wp_fastify_revisions_cleanup_manual" class="button button-primary" value="Run Cleanup Now">';
+            echo '</form>';
+        });
+
+
+
     }
 
     // Load dependencies (e.g., the minifier class)
@@ -47,10 +85,18 @@ class WP_Fastify_Admin {
         register_setting('wp_fastify_asset_optimization_options', 'wp_fastify_asset_optimization_enable_minification');
         register_setting('wp_fastify_asset_optimization_options', 'wp_fastify_asset_optimization_enable_html_minification');
         register_setting('wp_fastify_asset_optimization_options', 'wp_fastify_asset_optimization_enable_image_lazy_loading');
+
+        // Database Optimization
+        register_setting('wp_fastify_db_optimization_options', 'wp_fastify_db_optimization_revisions_cleanup_enable');
+        register_setting('wp_fastify_db_optimization_options', 'wp_fastify_db_optimization_revisions_cleanup_schedule');
+        register_setting('wp_fastify_db_optimization_options', 'wp_fastify_db_optimization_revisions_cleanup_keep_count');
     }
 
     public function render_settings_page() {
         $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'caching';
+        if (isset($_GET['cleanup']) && $_GET['cleanup'] === 'success') {
+            echo '<div class="notice notice-success is-dismissible"><p>Revisions cleanup executed successfully.</p></div>';
+        }
         ?>
         <div class="wrap">
             <h1>WP Fastify Settings</h1>
@@ -61,8 +107,11 @@ class WP_Fastify_Admin {
                 <a href="?page=wp-fastify&tab=asset_optimization" class="nav-tab <?php echo $active_tab === 'asset_optimization' ? 'nav-tab-active' : ''; ?>">
                     Asset Optimization
                 </a>
+                <a href="?page=wp-fastify&tab=db_optimization" class="nav-tab <?php echo $active_tab === 'db_optimization' ? 'nav-tab-active' : ''; ?>">
+                    Database Optimization
+                </a>
             </h2>
-
+    
             <form method="post" action="options.php">
                 <?php
                 if ($active_tab === 'caching') {
@@ -71,10 +120,21 @@ class WP_Fastify_Admin {
                 } elseif ($active_tab === 'asset_optimization') {
                     settings_fields('wp_fastify_asset_optimization_options');
                     $this->render_asset_optimization_section();
+                } elseif ($active_tab === 'db_optimization') {
+                    settings_fields('wp_fastify_db_optimization_options');
+                    $this->render_db_optimization_section();
                 }
                 submit_button();
                 ?>
             </form>
+    
+            <?php if ($active_tab === 'db_optimization') : ?>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                    <?php wp_nonce_field('wp_fastify_revisions_cleanup_manual_action', '_wpnonce'); ?>
+                    <input type="hidden" name="action" value="wp_fastify_run_cleanup">
+                    <input type="submit" class="button button-primary" value="Run Cleanup Now">
+                </form>
+            <?php endif; ?>
         </div>
         <?php
     }
@@ -163,6 +223,47 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
         <?php
     }
 
+    private function render_db_optimization_section() {
+        ?>
+        <h2>Database Optimization</h2>
+        <table class="form-table">
+            <tr valign="top">
+                <th scope="row">Enable Revisions Cleanup</th>
+                <td>
+                    <input type="checkbox" name="wp_fastify_db_optimization_revisions_cleanup_enable" value="1" 
+                    <?php checked(1, get_option('wp_fastify_db_optimization_revisions_cleanup_enable', 0)); ?> />
+                    <label for="wp_fastify_db_optimization_revisions_cleanup_enable">Enable/Disable revisions cleanup in database.</label>
+                </td>
+            </tr>
+            <tr valign="top">
+                <th scope="row">Cleanup Schedule</th>
+                <td>
+                    <?php
+                    $value = get_option('wp_fastify_db_optimization_revisions_cleanup_schedule', 'weekly');
+                    $options = ['daily', 'weekly', 'monthly'];
+                    ?>
+                    <select name="wp_fastify_db_optimization_revisions_cleanup_schedule">
+                        <?php foreach ($options as $option) { ?>
+                        <option value="<?php echo $option; ?>" <?php selected($value, $option, true); ?> >
+                            <?php echo ucfirst($option); ?>
+                        </option>
+                        <?php } ?>
+                    </select>
+                    <label for="wp_fastify_db_optimization_revisions_cleanup_schedule">Schedule the time when you want to delete the revisions.</label>
+                </td>
+            </tr>
+            <tr valign="top">
+                <th scope="row">Revisions to Keep per Post</th>
+                <td>
+                    <?php $value = get_option('wp_fastify_db_optimization_revisions_cleanup_keep_count', 5); ?>
+                    <input type="number" name="wp_fastify_db_optimization_revisions_cleanup_keep_count" value="<?php echo esc_attr($value); ?>" />
+                    <label for="wp_fastify_db_optimization_revisions_cleanup_keep_count">Enter the number of revisions to keep per post.</label>
+                </td>
+            </tr>
+        </table>
+        <?php
+    }
+
     public function update_htaccess_based_on_setting() {
         $enable_static_caching = get_option('wp_fastify_caching_enable_static_caching');
         $cache_duration = absint(get_option('wp_fastify_caching_cache_duration', 31536000)); // Default to 1 year
@@ -232,5 +333,69 @@ NGINX;
         file_put_contents($config_file, $nginx_config);
 
         echo '<p>Download the Nginx cache configuration file: <a href="' . content_url('wp-fastify-nginx-cache.conf') . '" download>Download Nginx Config</a></p>';
+    }
+
+    /**
+     * Cleans up the revisions of a post 
+    */
+    public function wp_fastify_cleanup_revisions() {
+        $keep_count = (int) get_option('wp_fastify_db_optimization_revisions_cleanup_keep_count', 5);
+    
+        global $wpdb;
+    
+        // Get the IDs of revisions to keep
+        $revisions_to_keep_query = "
+            SELECT rr.ID
+            FROM {$wpdb->posts} AS rr
+            WHERE rr.post_type = 'revision'
+            AND (
+                SELECT COUNT(*)
+                FROM {$wpdb->posts} AS rr_inner
+                WHERE rr_inner.post_parent = rr.post_parent
+                AND rr_inner.post_type = 'revision'
+                AND rr_inner.ID >= rr.ID
+            ) <= %d
+        ";
+    
+        $revisions_to_keep_ids = $wpdb->get_col($wpdb->prepare($revisions_to_keep_query, $keep_count));
+    
+        if (!empty($revisions_to_keep_ids)) {
+            $placeholders = implode(',', array_fill(0, count($revisions_to_keep_ids), '%d'));
+    
+            // Delete revisions not in the keep list
+            $cleanup_query = "
+                DELETE FROM {$wpdb->posts}
+                WHERE post_type = 'revision'
+                AND ID NOT IN ($placeholders)
+            ";
+    
+            $wpdb->query($wpdb->prepare($cleanup_query, ...$revisions_to_keep_ids));
+        } else {
+            // No revisions to keep, clean up all revisions
+            $cleanup_query = "
+                DELETE FROM {$wpdb->posts}
+                WHERE post_type = 'revision'
+            ";
+    
+            $wpdb->query($cleanup_query);
+        }
+    
+        error_log('Revisions cleanup executed.');
+    }
+
+    public function handle_manual_cleanup() {
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have sufficient permissions to access this page.'));
+        }
+    
+        if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'wp_fastify_revisions_cleanup_manual_action')) {
+            wp_die(__('Nonce verification failed.'));
+        }
+    
+        $this->wp_fastify_cleanup_revisions();
+    
+        // Redirect back to the settings page with a success message
+        wp_redirect(add_query_arg(['page' => 'wp-fastify', 'tab' => 'db_optimization', 'cleanup' => 'success'], admin_url('options-general.php')));
+        exit;
     }
 }
