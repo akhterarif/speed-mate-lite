@@ -45,7 +45,8 @@ class WP_Fastify_Assets {
         // Pass AJAX URL and nonce to JavaScript
         wp_localize_script('wp-fastify-admin-script', 'wpFastifyAjax', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce'   => wp_create_nonce('wp_fastify_trash_spam_cleanup_nonce'),
+            'trashSpamNonce' => wp_create_nonce('wp_fastify_trash_spam_cleanup_nonce'),
+            'revisionsCleanupNonce' => wp_create_nonce('wp_fastify_revisions_cleanup_nonce'),
         ]);
     }
 }
