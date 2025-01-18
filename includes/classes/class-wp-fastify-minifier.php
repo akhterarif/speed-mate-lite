@@ -15,7 +15,7 @@ class WP_Fastify_Minifier {
         $enable_minification = get_option('wp_fastify_asset_optimization_enable_minification', 0);
 
         // Skip minification for admin pages or excluded handles
-        if (in_array($handle, ['wp-edit-post', 'wp-block-editor', 'wp-blocks', 'wp-components'])) {
+        if (is_admin() || in_array($handle, ['wp-edit-post', 'wp-block-editor', 'wp-blocks', 'wp-components'])) {
             return $src;
         }
 
