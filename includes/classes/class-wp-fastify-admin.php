@@ -268,6 +268,7 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
     private function render_db_optimization_section() {
         ?>
         <h2>Database Optimization</h2>
+        <h3>Revisions Cleanup</h3>
         <table class="form-table">
             <tr valign="top">
                 <th scope="row">Enable Revisions Cleanup</th>
@@ -309,6 +310,9 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
                     <div id="wp-fastify-revisions-success-message" class="hidden" style="margin-top: 10px;"></div>
                 </td>
             </tr>
+        </table>
+        <h3>Trash and Spam Cleanup</h3>
+        <table class="form-table">
             <tr valign="top">
                 <th scope="row">Enable Trash and Spam Cleanup</th>
                 <td>
