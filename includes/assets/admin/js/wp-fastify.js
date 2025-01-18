@@ -1,0 +1,46 @@
+jQuery(document).ready(function ($) {
+  $("#wp-fastify-trash-spam-cleanup-btn").on("click", function (e) {
+    e.preventDefault();
+
+    // Disable the button while processing
+    const $button = $(this);
+    $button.prop("disabled", true).text("Running Cleanup...");
+
+    // Send AJAX request
+    $.ajax({
+      url: wpFastifyAjax.ajaxUrl,
+      type: "POST",
+      dataType: "json",
+      data: {
+        action: "wp_fastify_trash_spam_cleanup",
+        nonce: wpFastifyAjax.nonce,
+      },
+      success: function (response) {
+        if (response.success) {
+          // Show success message
+          $("#wp-fastify-success-message")
+            .text(response.data.message)
+            .removeClass("hidden")
+            .addClass("updated");
+        } else {
+          // Show error message
+          $("#wp-fastify-success-message")
+            .text(response.data.message)
+            .removeClass("hidden")
+            .addClass("error");
+        }
+      },
+      error: function () {
+        // Show general error message
+        $("#wp-fastify-success-message")
+          .text("An error occurred while running the cleanup.")
+          .removeClass("hidden")
+          .addClass("error");
+      },
+      complete: function () {
+        // Re-enable the button
+        $button.prop("disabled", false).text("Run Cleanup Now");
+      },
+    });
+  });
+});

@@ -52,8 +52,40 @@ class WP_Fastify_Admin {
             echo '</form>';
         });
 
+        // Perform trash and spam cleanup
+        add_action('wp_fastify_trash_spam_cleanup_cron', [$this, 'wp_fastify_cleanup_trash_and_spam']);
 
+        // Clear scheduled task when disabling
+        add_action('update_option_wp_fastify_trash_spam_cleanup_enable', function ($old_value, $value) {
+            if (!$value) {
+                wp_clear_scheduled_hook('wp_fastify_trash_spam_cleanup_cron');
+            }
+        }, 10, 2);
 
+        // Manual cleanup handler
+        // add_action('admin_post_wp_fastify_run_trash_spam_cleanup', [$this, 'handle_manual_trash_spam_cleanup']);
+    
+
+        // AJAX hooks for manual trash and spam cleanup
+        add_action('wp_ajax_wp_fastify_trash_spam_cleanup', [ $this, 'ajax_trash_spam_cleanup' ]);
+    }
+
+    public function ajax_trash_spam_cleanup() {
+        // Check nonce for security
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wp_fastify_trash_spam_cleanup_nonce')) {
+            wp_send_json_error(['message' => 'Nonce verification failed.']);
+        }
+    
+        // Check user permissions
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'You do not have sufficient permissions to perform this action.']);
+        }
+    
+        // Run the trash and spam cleanup
+        $this->wp_fastify_cleanup_trash_and_spam();
+    
+        // Send a success response
+        wp_send_json_success(['message' => 'Trash and spam cleanup executed successfully.']);
     }
 
     // Load dependencies (e.g., the minifier class)
@@ -260,7 +292,36 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
                     <label for="wp_fastify_db_optimization_revisions_cleanup_keep_count">Enter the number of revisions to keep per post.</label>
                 </td>
             </tr>
+            <tr valign="top">
+                <th scope="row">Enable Trash and Spam Cleanup</th>
+                <td>
+                    <input type="checkbox" name="wp_fastify_trash_spam_cleanup_enable" value="1" 
+                    <?php checked(1, get_option('wp_fastify_trash_spam_cleanup_enable', 0)); ?> />
+                    <label for="wp_fastify_trash_spam_cleanup_enable">Automatically clean up trash and spam from the database.</label>
+                </td>
+            </tr>
+            <tr valign="top">
+                <th scope="row">Cleanup Schedule</th>
+                <td>
+                    <?php
+                    $value = get_option('wp_fastify_trash_spam_cleanup_schedule', 'weekly');
+                    $options = ['daily', 'weekly', 'monthly'];
+                    ?>
+                    <select name="wp_fastify_trash_spam_cleanup_schedule">
+                        <?php foreach ($options as $option) { ?>
+                        <option value="<?php echo $option; ?>" <?php selected($value, $option, true); ?>>
+                            <?php echo ucfirst($option); ?>
+                        </option>
+                        <?php } ?>
+                    </select>
+                    <label for="wp_fastify_trash_spam_cleanup_schedule">Set the schedule for trash and spam cleanup.</label>
+                </td>
+            </tr>
         </table>
+        
+        <h3>Manual Cleanup</h3>
+        <button id="wp-fastify-trash-spam-cleanup-btn" class="button button-primary">Run Cleanup Now</button>
+        <div id="wp-fastify-success-message" class="hidden" style="margin-top: 10px;"></div>
         <?php
     }
 
@@ -398,4 +459,47 @@ NGINX;
         wp_redirect(add_query_arg(['page' => 'wp-fastify', 'tab' => 'db_optimization', 'cleanup' => 'success'], admin_url('options-general.php')));
         exit;
     }
+
+    public function wp_fastify_cleanup_trash_and_spam() {
+        global $wpdb;
+    
+        // Delete spam comments
+        $spam_comments_deleted = $wpdb->query("
+            DELETE FROM $wpdb->comments
+            WHERE comment_approved = 'spam'
+        ");
+    
+        // Delete trash comments
+        $trash_comments_deleted = $wpdb->query("
+            DELETE FROM $wpdb->comments
+            WHERE comment_approved = 'trash'
+        ");
+    
+        // Delete trashed posts
+        $trashed_posts_deleted = $wpdb->query("
+            DELETE FROM $wpdb->posts
+            WHERE post_status = 'trash'
+        ");
+    
+        // Optionally, delete related metadata for comments and posts
+        $wpdb->query("
+            DELETE FROM $wpdb->commentmeta
+            WHERE comment_id NOT IN (
+                SELECT comment_id FROM $wpdb->comments
+            )
+        ");
+        $wpdb->query("
+            DELETE FROM $wpdb->postmeta
+            WHERE post_id NOT IN (
+                SELECT ID FROM $wpdb->posts
+            )
+        ");
+    
+        // Log results for debugging
+        error_log("Trash and spam cleanup executed: 
+            Spam comments deleted: $spam_comments_deleted, 
+            Trash comments deleted: $trash_comments_deleted, 
+            Trashed posts deleted: $trashed_posts_deleted.");
+    }
+
 }
