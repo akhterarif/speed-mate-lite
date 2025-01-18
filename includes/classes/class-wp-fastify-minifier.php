@@ -12,35 +12,35 @@ class WP_Fastify_Minifier {
      * @return string Minified asset URL or original URL if minification isn't applied.
      */
     public static function minify_assets($src, $handle) {
-    $enable_minification = get_option('wp_fastify_asset_optimization_enable_minification', 0);
+        $enable_minification = get_option('wp_fastify_asset_optimization_enable_minification', 0);
 
-    // Skip minification for admin pages or excluded handles
-    if (is_admin() || in_array($handle, ['wp-edit-post', 'wp-block-editor', 'wp-blocks', 'wp-components'])) {
-        return $src;
-    }
+        // Skip minification for admin pages or excluded handles
+        if (in_array($handle, ['wp-edit-post', 'wp-block-editor', 'wp-blocks', 'wp-components'])) {
+            return $src;
+        }
 
-    if ($enable_minification && strpos($src, '.min.') === false) {
-        $parsed_url = parse_url($src);
-        $file_path = isset($parsed_url['path']) ? ABSPATH . ltrim($parsed_url['path'], '/') : '';
-        $file_path = preg_replace('#/+#', '/', $file_path);
+        if ($enable_minification && strpos($src, '.min.') === false) {
+            $parsed_url = parse_url($src);
+            $file_path = isset($parsed_url['path']) ? ABSPATH . ltrim($parsed_url['path'], '/') : '';
+            $file_path = preg_replace('#/+#', '/', $file_path);
 
-        if (file_exists($file_path)) {
-            $content = file_get_contents($file_path);
-            $ext = pathinfo($file_path, PATHINFO_EXTENSION);
+            if (file_exists($file_path)) {
+                $content = file_get_contents($file_path);
+                $ext = pathinfo($file_path, PATHINFO_EXTENSION);
 
-            if (in_array($ext, ['css', 'js'])) {
-                $minified_content = WP_Fastify_Minifier::minify_content($content, $ext);
-                $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
+                if (in_array($ext, ['css', 'js'])) {
+                    $minified_content = WP_Fastify_Minifier::minify_content($content, $ext);
+                    $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
 
-                file_put_contents($minified_path, $minified_content);
+                    file_put_contents($minified_path, $minified_content);
 
-                return str_replace(ABSPATH, site_url('/'), $minified_path);
+                    return str_replace(ABSPATH, site_url('/'), $minified_path);
+                }
             }
         }
-    }
 
-    return $src;
-}
+        return $src;
+    }
 
     /**
      * Minify the content of CSS or JS files.

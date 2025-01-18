@@ -10,14 +10,17 @@ class WP_Fastify_Admin {
     }
 
     public function register_hooks() {
+        // Loading the minified files in the site 
+        add_filter('script_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
+        add_filter('style_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
+
+        
         add_action('admin_menu', [ $this, 'add_settings_page' ]);
         add_action('admin_init', [ $this, 'register_settings' ]);
         add_action('admin_init', [ $this, 'update_htaccess_based_on_setting' ]);
         add_action('admin_post_wp_fastify_run_cleanup', [ $this, 'handle_manual_cleanup' ]); // Add this line
 
-        // Loading the minified files in the site 
-        add_filter('script_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
-        add_filter('style_loader_src', [ 'WP_Fastify\WP_Fastify_Minifier', 'minify_assets' ], 10, 2);
+        
 
         // Schedule cleanup task
         add_action('wp', function () {
@@ -301,7 +304,7 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
                 </td>
             </tr>
             <tr valign="top">
-                <th scope="row">Cleanup Schedule</th>
+                <th scope="row">Trash and Spam Cleanup Schedule</th>
                 <td>
                     <?php
                     $value = get_option('wp_fastify_trash_spam_cleanup_schedule', 'weekly');
@@ -317,11 +320,16 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
                     <label for="wp_fastify_trash_spam_cleanup_schedule">Set the schedule for trash and spam cleanup.</label>
                 </td>
             </tr>
+            <tr valign="top">
+                <th scope="row">Trash and Spam Cleanup Manually</th>
+                <td>
+                    <button id="wp-fastify-trash-spam-cleanup-btn" class="button button-primary">Run Cleanup Now</button>
+                    <div id="wp-fastify-success-message" class="hidden" style="margin-top: 10px;"></div>
+                </td>
+            </tr>
         </table>
+
         
-        <h3>Manual Cleanup</h3>
-        <button id="wp-fastify-trash-spam-cleanup-btn" class="button button-primary">Run Cleanup Now</button>
-        <div id="wp-fastify-success-message" class="hidden" style="margin-top: 10px;"></div>
         <?php
     }
 
