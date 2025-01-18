@@ -275,7 +275,7 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
                 <td>
                     <input type="checkbox" name="wp_fastify_db_optimization_revisions_cleanup_enable" value="1" 
                     <?php checked(1, get_option('wp_fastify_db_optimization_revisions_cleanup_enable', 0)); ?> />
-                    <label for="wp_fastify_db_optimization_revisions_cleanup_enable">Enable/Disable revisions cleanup in database.</label>
+                    <label for="wp_fastify_db_optimization_revisions_cleanup_enable">Enable/Disable revisions (of posts, pages etc) cleanup in database.</label>
                 </td>
             </tr>
             <tr valign="top">
@@ -300,7 +300,7 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
                 <td>
                     <?php $value = get_option('wp_fastify_db_optimization_revisions_cleanup_keep_count', 5); ?>
                     <input type="number" name="wp_fastify_db_optimization_revisions_cleanup_keep_count" value="<?php echo esc_attr($value); ?>" />
-                    <label for="wp_fastify_db_optimization_revisions_cleanup_keep_count">Enter the number of revisions to keep per post.</label>
+                    <label for="wp_fastify_db_optimization_revisions_cleanup_keep_count">Enter the number of revisions to keep per post, pages etc.</label>
                 </td>
             </tr>
             <tr valign="top">
@@ -318,7 +318,7 @@ location ~* \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$
                 <td>
                     <input type="checkbox" name="wp_fastify_db_optimization_trash_spam_cleanup_enable" value="1" 
                     <?php checked(1, get_option('wp_fastify_db_optimization_trash_spam_cleanup_enable', 0)); ?> />
-                    <label for="wp_fastify_db_optimization_trash_spam_cleanup_enable">Automatically clean up trash and spam from the database.</label>
+                    <label for="wp_fastify_db_optimization_trash_spam_cleanup_enable">Automatically clean up trash and spam (of posts, pages, comments etc) from the database.</label>
                 </td>
             </tr>
             <tr valign="top">
