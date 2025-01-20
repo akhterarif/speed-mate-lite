@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_Fastify;
+namespace WP_Fastify\Includes;
 
 class WP_Fastify_Assets {
 

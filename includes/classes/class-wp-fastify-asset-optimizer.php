@@ -1,8 +1,15 @@
 <?php
+namespace WP_Fastify\Includes;
 
-namespace WP_Fastify;
+class WP_Fastify_Asset_Optimizer {
+    public function __construct() {
+        $this->register_hooks();
+    }
 
-class WP_Fastify_Minifier {
+    public function register_hooks() {
+        add_filter('script_loader_src', [$this, 'minify_assets'], 10, 2);
+        add_filter('style_loader_src', [$this, 'minify_assets'], 10, 2);
+    }
 
     /**
      * Minify CSS and JS assets.
@@ -29,7 +36,7 @@ class WP_Fastify_Minifier {
                 $ext = pathinfo($file_path, PATHINFO_EXTENSION);
 
                 if (in_array($ext, ['css', 'js'])) {
-                    $minified_content = WP_Fastify_Minifier::minify_content($content, $ext);
+                    $minified_content = WP_Fastify_Asset_Optimizer::minify_content($content, $ext);
                     $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
 
                     file_put_contents($minified_path, $minified_content);

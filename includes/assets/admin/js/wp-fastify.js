@@ -18,13 +18,13 @@ jQuery(document).ready(function ($) {
       success: function (response) {
         if (response.success) {
           // Show success message
-          $("#wp-fastify-success-message")
+          $("#wp-fastify-trash-spam-success-message")
             .text(response.data.message)
             .removeClass("hidden")
             .addClass("updated");
         } else {
           // Show error message
-          $("#wp-fastify-success-message")
+          $("#wp-fastify-trash-spam-success-message")
             .text(response.data.message)
             .removeClass("hidden")
             .addClass("error");
@@ -32,7 +32,7 @@ jQuery(document).ready(function ($) {
       },
       error: function () {
         // Show general error message
-        $("#wp-fastify-success-message")
+        $("#wp-fastify-trash-spam-success-message")
           .text("An error occurred while running the cleanup.")
           .removeClass("hidden")
           .addClass("error");

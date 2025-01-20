@@ -1,0 +1,198 @@
+<?php
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+// Check for cleanup success messages
+if (isset($_GET['cleanup']) && $_GET['cleanup'] === 'success') {
+    echo '<div class="notice notice-success is-dismissible"><p>Cleanup executed successfully.</p></div>';
+}
+
+// Prepare tab URLs
+$tabs = [
+    'caching' => [
+        'label' => __('Caching', 'wp-fastify'),
+        'button' => __('Save Caching Settings', 'wp-fastify')
+    ],
+    'asset_optimization' => [
+        'label' => __('Asset Optimization', 'wp-fastify'),
+        'button' => __('Save Optimization Settings', 'wp-fastify')
+    ],
+    'db_optimization' => [
+        'label' => __('Database Optimization', 'wp-fastify'),
+        'button' => __('Save Database Settings', 'wp-fastify')
+    ]
+];
+
+$current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
+?>
+
+<div class="wrap">
+    <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+
+    <h2 class="nav-tab-wrapper">
+        <?php foreach ($tabs as $tab_key => $tab_data) : ?>
+            <a href="?page=wp-fastify&tab=<?php echo esc_attr($tab_key); ?>" 
+               class="nav-tab <?php echo $current_tab === $tab_key ? 'nav-tab-active' : ''; ?>">
+                <?php echo esc_html($tab_data['label']); ?>
+            </a>
+        <?php endforeach; ?>
+    </h2>
+
+    <div class="notice notice-success settings-success hidden">
+        <p><?php _e('Settings saved successfully!', 'wp-fastify'); ?></p>
+    </div>
+
+    <div class="notice notice-error settings-error hidden">
+        <p><?php _e('Error saving settings. Please try again.', 'wp-fastify'); ?></p>
+    </div>
+
+    <form id="wp-fastify-settings-form" method="post" data-tab="<?php echo esc_attr($current_tab); ?>">
+        <?php
+        wp_nonce_field('wp_fastify_' . $current_tab . '_nonce', 'wp_fastify_nonce');
+
+        // Load the appropriate section template
+        switch ($current_tab) {
+            case 'caching':
+                require_once plugin_dir_path(__FILE__) . 'caching-section.php';
+                break;
+
+            case 'asset_optimization':
+                require_once plugin_dir_path(__FILE__) . 'asset-optimization-section.php';
+                break;
+
+            case 'db_optimization':
+                require_once plugin_dir_path(__FILE__) . 'db-optimization-section.php';
+                break;
+        }
+        ?>
+
+        <div class="submit-wrapper">
+            <button type="submit" class="button button-primary" id="wp-fastify-save-settings">
+                <?php echo esc_html($tabs[$current_tab]['button']); ?>
+            </button>
+            <span class="spinner"></span>
+        </div>
+    </form>
+</div>
+
+<style>
+.submit-wrapper {
+    margin-top: 20px;
+    position: relative;
+}
+
+.submit-wrapper .spinner {
+    float: none;
+    margin-top: 0;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.settings-success,
+.settings-error {
+    display: none;
+}
+
+.settings-success.visible,
+.settings-error.visible {
+    display: block;
+}
+</style>
+
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    const form = $('#wp-fastify-settings-form');
+    const successNotice = $('.settings-success');
+    const errorNotice = $('.settings-error');
+    const submitButton = $('#wp-fastify-save-settings');
+    const spinner = $('.spinner');
+
+    form.on('submit', function(e) {
+        e.preventDefault();
+        
+        // Hide any existing notices
+        successNotice.removeClass('visible');
+        errorNotice.removeClass('visible');
+        
+        // Disable submit button and show spinner
+        submitButton.prop('disabled', true);
+        spinner.addClass('is-active');
+
+        // Collect form data
+        const formData = new FormData(this);
+        formData.append('action', 'wp_fastify_save_settings');
+        formData.append('tab', form.data('tab'));
+
+        // Make AJAX request
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    successNotice.addClass('visible');
+                    
+                    // If there are any specific actions to take based on the settings
+                    if (response.data.reload) {
+                        location.reload();
+                    }
+                    
+                    // Handle any tab-specific success actions
+                    switch(form.data('tab')) {
+                        case 'caching':
+                            if (response.data.htaccess_updated) {
+                                // Maybe show additional success message
+                            }
+                            break;
+                        case 'asset_optimization':
+                            if (response.data.cache_cleared) {
+                                // Maybe show additional success message
+                            }
+                            break;
+                    }
+                } else {
+                    errorNotice.find('p').text(response.data.message || 'Error saving settings.');
+                    errorNotice.addClass('visible');
+                }
+            },
+            error: function() {
+                errorNotice.addClass('visible');
+            },
+            complete: function() {
+                // Re-enable submit button and hide spinner
+                submitButton.prop('disabled', false);
+                spinner.removeClass('is-active');
+                
+                // Scroll to the notice
+                $('html, body').animate({
+                    scrollTop: form.offset().top - 50
+                }, 500);
+            }
+        });
+    });
+
+    // Handle tab-specific UI interactions
+    switch(form.data('tab')) {
+        case 'caching':
+            // Add any caching-specific UI handlers
+            $('[name="wp_fastify_caching_enable_cache"]').on('change', function() {
+                // Handle dependencies
+            });
+            break;
+            
+        case 'asset_optimization':
+            // Add any asset optimization-specific UI handlers
+            $('[name="wp_fastify_asset_optimization_enable_minification"]').on('change', function() {
+                // Handle dependencies
+            });
+            break;
+            
+        case 'db_optimization':
+            // The existing cleanup button handlers remain unchanged
+            break;
+    }
+});
+</script>
