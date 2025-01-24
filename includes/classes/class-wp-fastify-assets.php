@@ -5,6 +5,7 @@ namespace WP_Fastify\Includes;
 class WP_Fastify_Assets {
 
     public static function enqueue_scripts() {
+        error_log(wp_json_encode("Adding the secipt"));
         // Enqueue CSS
         wp_enqueue_style(
             'wp-fastify-style',
@@ -24,6 +25,7 @@ class WP_Fastify_Assets {
     }
 
     public static function enqueue_admin_scripts() {
+        error_log(wp_json_encode("Adding Admin the secipt"));
         // Enqueue CSS
         wp_enqueue_style(
             'wp-fastify-admin-style',

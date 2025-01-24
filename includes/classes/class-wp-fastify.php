@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_Fastify;
+namespace WP_Fastify\Includes;
 
 use WP_Fastify\Includes\WP_Fastify_Asset_Optimizer;
 use WP_Fastify\Includes\WP_Fastify_Caching;
@@ -13,6 +13,7 @@ class WP_Fastify {
     }
 
     public function register_hooks() {
+        
         // Minify CSS and JS files
         add_filter('script_loader_src', [ 'WP_Fastify\Includes\WP_Fastify_Asset_Optimizer', 'minify_assets' ], 10, 2);
         add_filter('style_loader_src', [ 'WP_Fastify\Includes\WP_Fastify_Asset_Optimizer', 'minify_assets' ], 10, 2);

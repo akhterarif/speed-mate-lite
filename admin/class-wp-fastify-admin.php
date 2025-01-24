@@ -115,6 +115,9 @@ class WP_Fastify_Admin {
         
         update_option('wp_fastify_asset_optimization_enable_image_lazy_loading', 
             isset($data['wp_fastify_asset_optimization_enable_image_lazy_loading']) ? 1 : 0);
+
+        update_option('wp_fastify_asset_optimization_exclusions', 
+            sanitize_textarea_field($data['wp_fastify_asset_optimization_exclusions']));
         
         // Clear asset cache if settings changed
         $this->caching::clear_cache();

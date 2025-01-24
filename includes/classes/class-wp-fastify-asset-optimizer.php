@@ -2,7 +2,10 @@
 namespace WP_Fastify\Includes;
 
 class WP_Fastify_Asset_Optimizer {
+    private $exclusions;
+
     public function __construct() {
+        $this->exclusions = get_option('wp_fastify_asset_optimization_exclusions', '');
         $this->register_hooks();
     }
 
@@ -20,10 +23,22 @@ class WP_Fastify_Asset_Optimizer {
      */
     public static function minify_assets($src, $handle) {
         $enable_minification = get_option('wp_fastify_asset_optimization_enable_minification', 0);
+        $exclusions = array_filter(array_map('trim', explode("\n", get_option('wp_fastify_asset_optimization_exclusions', ''))));
 
         // Skip minification for admin pages or excluded handles
         if (is_admin() || in_array($handle, ['wp-edit-post', 'wp-block-editor', 'wp-blocks', 'wp-components'])) {
             return $src;
+        }
+
+        // Skip minification for excluded files
+        foreach ($exclusions as $exclusion) {
+            // Escape special characters and replace wildcards with regex patterns
+            $exclusion_pattern = str_replace('*', '.*', preg_quote($exclusion, '/'));
+            // Allow optional query strings at the end
+            $exclusion_pattern .= '(\\?.*)?$';
+            if (preg_match('/^' . $exclusion_pattern . '/', $src)) {
+                return $src;
+            }
         }
 
         if ($enable_minification && strpos($src, '.min.') === false) {

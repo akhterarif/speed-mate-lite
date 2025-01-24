@@ -25,7 +25,7 @@ if (is_admin()) {
 }
 
 
-$plugin = new WP_Fastify\WP_Fastify();
+$plugin = new WP_Fastify\Includes\WP_Fastify();
 $plugin->run();
 
 
