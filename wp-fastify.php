@@ -17,7 +17,7 @@ require_once plugin_dir_path(__FILE__) . 'admin/class-wp-fastify-admin.php';
 
 // Hook to enqueue scripts and styles
 add_action('wp_enqueue_scripts', ['WP_Fastify\Includes\WP_Fastify_Assets', 'enqueue_scripts']);
-add_action('admin_enqueue_scripts', ['WP_Fastify\Includes\WP_Fastify_Assets', 'enqueue_admin_scripts']);
+add_action('admin_enqueue_scripts', ['WP_Fastify\Includes\WP_Fastify_Assets', 'enqueue_admin_scripts'], 10, 1);
 
 
 if (is_admin()) {

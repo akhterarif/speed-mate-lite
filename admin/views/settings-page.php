@@ -21,6 +21,10 @@ $tabs = [
     'db_optimization' => [
         'label' => __('Database Optimization', 'wp-fastify'),
         'button' => __('Save Database Settings', 'wp-fastify')
+    ],
+    'performance_analysis' => [
+        'label' => __('Performance Analysis', 'wp-fastify'),
+        'button' => __('Performance Analysis', 'wp-fastify')
     ]
 ];
 
@@ -38,10 +42,11 @@ $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
             </a>
         <?php endforeach; ?>
     </h2>
-
+    <?php if ($current_tab !== 'performance_analysis') : ?>
     <div class="notice notice-success settings-success hidden">
         <p><?php _e('Settings saved successfully!', 'wp-fastify'); ?></p>
     </div>
+    <?php endif; ?>
 
     <div class="notice notice-error settings-error hidden">
         <p><?php _e('Error saving settings. Please try again.', 'wp-fastify'); ?></p>
@@ -63,6 +68,10 @@ $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
 
             case 'db_optimization':
                 require_once plugin_dir_path(__FILE__) . 'db-optimization-section.php';
+                break;
+
+            case 'performance_analysis':
+                require_once plugin_dir_path(__FILE__) . 'performance-analysis-section.php';
                 break;
         }
         ?>
@@ -132,6 +141,7 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(response) {
+                console.log('data here', response);
                 if (response.success) {
                     successNotice.addClass('visible');
                     
@@ -152,6 +162,26 @@ jQuery(document).ready(function($) {
                                 // Maybe show additional success message
                             }
                             break;
+                        case 'performance_analysis':
+                            let data = response.data;
+                            $('#page-speed-score').text(data.score);
+                            let metricsHtml = '';
+                            data.metrics.forEach(metric => {
+                                metricsHtml += `
+                                    <tr>
+                                        <td>${metric.name}</td>
+                                        <td>${metric.value}</td>
+                                        <td>${metric.status}</td>
+                                    </tr>
+                                `;
+                            });
+                            $('#performance-metrics').html(metricsHtml);
+                            $('#performance-recommendations').html(data.recommendations.map(r => `<li>${r}</li>`).join(''));
+                            $('#performance-results').show();
+
+                            break;
+            
+                        
                     }
                 } else {
                     errorNotice.find('p').text(response.data.message || 'Error saving settings.');
@@ -192,6 +222,26 @@ jQuery(document).ready(function($) {
             
         case 'db_optimization':
             // The existing cleanup button handlers remain unchanged
+            break;
+
+        case 'performance_analysis':
+            
+            
+            // Add any performance analysis-specific UI handlers
+            // $('#page-speed-score').text(data.score);
+            //         let metricsHtml = '';
+            //         data.metrics.forEach(metric => {
+            //             metricsHtml += `
+            //                 <tr>
+            //                     <td>${metric.name}</td>
+            //                     <td>${metric.value}</td>
+            //                     <td>${metric.status}</td>
+            //                 </tr>
+            //             `;
+            //         });
+            //         $('#performance-metrics').html(metricsHtml);
+            //         $('#performance-recommendations').html(data.recommendations.map(r => `<li>${r}</li>`).join(''));
+            //         $('#performance-results').show();
             break;
     }
 });

@@ -10,7 +10,6 @@ class WP_Fastify_Asset_Optimizer {
     }
 
     public function register_hooks() {
-        add_filter('style_loader_tag', [$this, 'combine_css_files'], 10, 2);
         add_filter('script_loader_src', [$this, 'minify_assets'], 10, 2);
         add_filter('style_loader_src', [$this, 'minify_assets'], 10, 2);
     }

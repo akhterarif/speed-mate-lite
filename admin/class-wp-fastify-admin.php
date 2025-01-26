@@ -5,12 +5,14 @@ namespace WP_Fastify\Admin;
 use WP_Fastify\Includes\WP_Fastify_Asset_Optimizer;
 use WP_Fastify\Includes\WP_Fastify_Caching;
 use WP_Fastify\Includes\WP_Fastify_DB_Optimizer;
+use WP_Fastify\Includes\WP_Fastify_Page_Speed;
 
 class WP_Fastify_Admin {
     private $settings;
     private $caching;
     private $asset_optimizer;
     private $db_optimizer;
+    private $page_speed;
     
     public function __construct() {
         $this->load_dependencies();
@@ -24,6 +26,7 @@ class WP_Fastify_Admin {
         require_once plugin_dir_path(__FILE__) . '../includes/classes/class-wp-fastify-caching.php';
         require_once plugin_dir_path(__FILE__) . '../includes/classes/class-wp-fastify-asset-optimizer.php';
         require_once plugin_dir_path(__FILE__) . '../includes/classes/class-wp-fastify-db-optimizer.php';
+        require_once plugin_dir_path(__FILE__) . '../includes/classes/class-wp-fastify-page-speed.php';
     }
 
     private function init_components() {
@@ -31,15 +34,18 @@ class WP_Fastify_Admin {
         $this->caching = new WP_Fastify_Caching();
         $this->asset_optimizer = new WP_Fastify_Asset_Optimizer();
         $this->db_optimizer = new WP_Fastify_DB_Optimizer();
+        $this->page_speed = new WP_Fastify_Page_Speed();
     }
 
     public function register_hooks() {
         add_action('admin_menu', [$this->settings, 'add_settings_page']);
         add_action('admin_init', [$this->settings, 'register_settings']);
+        
     }
 
     public function register_ajax_handlers() {
         add_action('wp_ajax_wp_fastify_save_settings', [$this, 'handle_save_settings']);
+        add_action('wp_ajax_wp_fastify_get_speed_metrics', [$this->page_speed, 'get_speed_metrics']);
     }
     
     public function handle_save_settings() {
@@ -68,6 +74,10 @@ class WP_Fastify_Admin {
                 
             case 'db_optimization':
                 $response = $this->save_db_optimization_settings($_POST);
+                break;
+
+            case 'performance_analysis':
+                $response = $this->show_performance_analysis($_POST);
                 break;
                 
             default:
@@ -145,4 +155,92 @@ class WP_Fastify_Admin {
         
         return ['schedule_updated' => true];
     }
+
+
+    private function show_performance_analysis($data) {
+        // Update database optimization settings
+        $url = get_home_url(); // Use site's home URL
+        $api_key = 'AIzaSyCCKnv-eubpfgrT0n3ACYCvx9g-fTPq32o'; // Replace with your actual API key
+        $api_url = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=$url&key=$api_key";
+
+        $response = wp_remote_get($api_url);
+        if (is_wp_error($response)) {
+            wp_send_json_error(['message' => 'Failed to fetch data from PageSpeed API']);
+        }
+
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        if (empty($data['lighthouseResult'])) {
+            wp_send_json_error(['message' => 'Invalid response from API']);
+        }
+
+        $lighthouse = $data['lighthouseResult'];
+
+        // Extract metrics and calculate statuses
+        $metrics = [
+            [
+                'name' => 'First Contentful Paint (FCP)',
+                'value' => $lighthouse['audits']['first-contentful-paint']['displayValue'],
+                'status' => $lighthouse['audits']['first-contentful-paint']['score'] >= 0.9 ? 'Good' : 'Needs Improvement',
+            ],
+            [
+                'name' => 'Largest Contentful Paint (LCP)',
+                'value' => $lighthouse['audits']['largest-contentful-paint']['displayValue'],
+                'status' => $lighthouse['audits']['largest-contentful-paint']['score'] >= 0.9 ? 'Good' : 'Needs Improvement',
+            ],
+            [
+                'name' => 'Cumulative Layout Shift (CLS)',
+                'value' => $lighthouse['audits']['cumulative-layout-shift']['displayValue'],
+                'status' => $lighthouse['audits']['cumulative-layout-shift']['score'] >= 0.9 ? 'Good' : 'Needs Improvement',
+            ],
+            [
+                'name' => 'Total Blocking Time (TBT)',
+                'value' => $lighthouse['audits']['total-blocking-time']['displayValue'],
+                'status' => $lighthouse['audits']['total-blocking-time']['score'] >= 0.9 ? 'Good' : 'Needs Improvement',
+            ],
+            [
+                'name' => 'Time to Interactive (TTI)',
+                'value' => $lighthouse['audits']['interactive']['displayValue'],
+                'status' => $lighthouse['audits']['interactive']['score'] >= 0.9 ? 'Good' : 'Needs Improvement',
+            ],
+            [
+                'name' => 'Speed Index',
+                'value' => $lighthouse['audits']['speed-index']['displayValue'],
+                'status' => $lighthouse['audits']['speed-index']['score'] >= 0.9 ? 'Good' : 'Needs Improvement',
+            ],
+            [
+                'name' => 'Server Response Time (TTFB)',
+                'value' => $lighthouse['audits']['server-response-time']['displayValue'],
+                'status' => $lighthouse['audits']['server-response-time']['score'] >= 0.9 ? 'Good' : 'Needs Improvement',
+            ],
+        ];
+
+        // Recommendations based on audits
+        $recommendations = [];
+        if ($lighthouse['audits']['uses-optimized-images']['score'] < 0.9) {
+            $recommendations[] = 'Optimize your images to improve loading speed.';
+        }
+        if ($lighthouse['audits']['unused-css-rules']['score'] < 0.9) {
+            $recommendations[] = 'Remove unused CSS to reduce page size.';
+        }
+        if ($lighthouse['audits']['render-blocking-resources']['score'] < 0.9) {
+            $recommendations[] = 'Eliminate render-blocking resources to improve page load time.';
+        }
+        if ($lighthouse['audits']['uses-text-compression']['score'] < 0.9) {
+            $recommendations[] = 'Enable text compression (e.g., Gzip or Brotli) to reduce data transfer.';
+        }
+        if ($lighthouse['audits']['efficient-animated-content']['score'] < 0.9) {
+            $recommendations[] = 'Optimize animations or large visual elements.';
+        }
+
+         // Send the response back to the frontend
+        return [
+            'score' => $lighthouse['categories']['performance']['score'] * 100, // Overall score
+            'metrics' => $metrics,
+            'recommendations' => $recommendations,
+        ];
+
+        
+        
+    }
+
 }
