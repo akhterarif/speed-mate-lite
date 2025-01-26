@@ -61,32 +61,3 @@ if (!defined('ABSPATH')) {
         </td>
     </tr>
 </table>
-
-<h3><?php _e('Advanced Settings', 'wp-fastify'); ?></h3>
-<table class="form-table">
-    <tr valign="top">
-        <th scope="row"><?php _e('Combine CSS Files', 'wp-fastify'); ?></th>
-        <td>
-            <input type="checkbox" 
-                   name="wp_fastify_asset_optimization_combine_css" 
-                   value="1" 
-                   <?php checked(1, get_option('wp_fastify_asset_optimization_combine_css', 0)); ?> />
-            <p class="description">
-                <?php _e('Combine multiple CSS files into one to reduce HTTP requests.', 'wp-fastify'); ?>
-            </p>
-        </td>
-    </tr>
-
-    <tr valign="top">
-        <th scope="row"><?php _e('Combine JavaScript Files', 'wp-fastify'); ?></th>
-        <td>
-            <input type="checkbox" 
-                   name="wp_fastify_asset_optimization_combine_js" 
-                   value="1" 
-                   <?php checked(1, get_option('wp_fastify_asset_optimization_combine_js', 0)); ?> />
-            <p class="description">
-                <?php _e('Combine multiple JavaScript files into one to reduce HTTP requests.', 'wp-fastify'); ?>
-            </p>
-        </td>
-    </tr>
-</table>

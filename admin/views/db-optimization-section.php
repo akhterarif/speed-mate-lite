@@ -13,14 +13,14 @@ if (!defined('ABSPATH')) {
 <h3><?php _e('Post Revisions Cleanup', 'wp-fastify'); ?></h3>
 <table class="form-table">
     <tr valign="top">
-        <th scope="row"><?php _e('Enable Revisions Cleanup', 'wp-fastify'); ?></th>
+        <th scope="row"><?php _e('Enable Post/Page Revisions Cleanup', 'wp-fastify'); ?></th>
         <td>
             <input type="checkbox" 
                    name="wp_fastify_db_optimization_revisions_cleanup_enable" 
                    value="1" 
                    <?php checked(1, get_option('wp_fastify_db_optimization_revisions_cleanup_enable', 0)); ?> />
             <p class="description">
-                <?php _e('Automatically clean up old post revisions from the database.', 'wp-fastify'); ?>
+                <?php _e('Automatically clean up old post/page revisions from the database.', 'wp-fastify'); ?>
             </p>
         </td>
     </tr>
@@ -124,7 +124,7 @@ if (!defined('ABSPATH')) {
         ];
         ?>
         <tr>
-            <td><?php _e('Post Revisions', 'wp-fastify'); ?></td>
+            <td><?php _e('Post/Page Revisions', 'wp-fastify'); ?></td>
             <td><?php echo number_format($stats['revisions']); ?></td>
         </tr>
         <tr>
