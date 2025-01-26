@@ -158,10 +158,21 @@ class WP_Fastify_Admin {
 
 
     private function show_performance_analysis($data) {
+        update_option('wp_fastify_pa_google_api_key', 
+            sanitize_text_field($data['wp_fastify_pa_google_api_key']));
+
+
+        error_log(wp_json_encode(get_option('wp_fastify_pa_google_api_key', '')));
+        
         // Update database optimization settings
         $url = get_home_url(); // Use site's home URL
-        $api_key = 'AIzaSyCCKnv-eubpfgrT0n3ACYCvx9g-fTPq32o'; // Replace with your actual API key
+        $api_key = get_option('wp_fastify_pa_google_api_key', ''); // Replace with your actual API key
         $api_url = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=$url&key=$api_key";
+
+
+        if (empty($api_key)) {
+            wp_send_json_error(['message' => 'Please enter a valid Google API key']);
+        }
 
         $response = wp_remote_get($api_url);
         if (is_wp_error($response)) {

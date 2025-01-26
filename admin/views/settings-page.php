@@ -141,7 +141,6 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log('data here', response);
                 if (response.success) {
                     successNotice.addClass('visible');
                     
@@ -188,10 +187,12 @@ jQuery(document).ready(function($) {
                     errorNotice.addClass('visible');
                 }
             },
-            error: function() {
-                errorNotice.addClass('visible');
+            error: function(response) {
+                errorNotice.addClass('visible');                
             },
-            complete: function() {
+            complete: function(response) {
+                (response.success) && $('#wp-fastify-pa-google-api-key').addClass('error');
+
                 // Re-enable submit button and hide spinner
                 submitButton.prop('disabled', false);
                 spinner.removeClass('is-active');
@@ -225,7 +226,6 @@ jQuery(document).ready(function($) {
             break;
 
         case 'performance_analysis':
-            
             
             // Add any performance analysis-specific UI handlers
             // $('#page-speed-score').text(data.score);
