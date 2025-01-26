@@ -1,7 +1,7 @@
 <?php
-namespace WP_Fastify\Includes;
+namespace Site_Fastify\Includes;
 
-class WP_Fastify_Asset_Optimizer {
+class Site_Fastify_Asset_Optimizer {
     private $exclusions;
 
     public function __construct() {
@@ -51,7 +51,7 @@ class WP_Fastify_Asset_Optimizer {
                 $ext = pathinfo($file_path, PATHINFO_EXTENSION);
 
                 if (in_array($ext, ['css', 'js'])) {
-                    $minified_content = WP_Fastify_Asset_Optimizer::minify_content($content, $ext);
+                    $minified_content = Site_Fastify_Asset_Optimizer::minify_content($content, $ext);
                     $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
 
                     file_put_contents($minified_path, $minified_content);

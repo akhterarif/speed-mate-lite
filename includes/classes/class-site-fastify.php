@@ -1,11 +1,11 @@
 <?php
 
-namespace WP_Fastify\Includes;
+namespace Site_Fastify\Includes;
 
-use WP_Fastify\Includes\WP_Fastify_Asset_Optimizer;
-use WP_Fastify\Includes\WP_Fastify_Caching;
+use Site_Fastify\Includes\Site_Fastify_Asset_Optimizer;
+use Site_Fastify\Includes\Site_Fastify_Caching;
 
-class WP_Fastify {
+class Site_Fastify {
 
     public function __construct() {
         $this->load_dependencies();
@@ -15,8 +15,8 @@ class WP_Fastify {
     public function register_hooks() {
         
         // Minify CSS and JS files
-        add_filter('script_loader_src', [ 'WP_Fastify\Includes\WP_Fastify_Asset_Optimizer', 'minify_assets' ], 10, 2);
-        add_filter('style_loader_src', [ 'WP_Fastify\Includes\WP_Fastify_Asset_Optimizer', 'minify_assets' ], 10, 2);
+        add_filter('script_loader_src', [ 'Site_Fastify\Includes\Site_Fastify_Asset_Optimizer', 'minify_assets' ], 10, 2);
+        add_filter('style_loader_src', [ 'Site_Fastify\Includes\Site_Fastify_Asset_Optimizer', 'minify_assets' ], 10, 2);
 
         // Add the HTML Minification functionality
         add_action('template_redirect', [ $this, 'start_html_minification' ]);
@@ -28,8 +28,8 @@ class WP_Fastify {
 
     // Load dependencies (e.g., Cache and Minifier classes)
     public function load_dependencies() {
-        require_once plugin_dir_path(__FILE__) . '../classes/class-wp-fastify-caching.php';
-        require_once plugin_dir_path(__FILE__) . '../classes/class-wp-fastify-asset-optimizer.php';
+        require_once plugin_dir_path(__FILE__) . '../classes/class-site-fastify-caching.php';
+        require_once plugin_dir_path(__FILE__) . '../classes/class-site-fastify-asset-optimizer.php';
     }
 
     // Initialize the caching functionality
@@ -41,18 +41,18 @@ class WP_Fastify {
             add_filter('shutdown', [ $this, 'end_caching' ]);
         }
 
-        add_action('save_post', [ WP_Fastify_Caching::class, 'clear_cache' ]);
+        add_action('save_post', [ Site_Fastify_Caching::class, 'clear_cache' ]);
     }
 
     // Serve the cached page
     public function serve_cache() {
-        WP_Fastify_Caching::serve_cache();
+        Site_Fastify_Caching::serve_cache();
     }
 
     // Start caching the output
     public function start_caching() {
-        ob_start([ WP_Fastify_Caching::class, 'save_cache' ]);
-        WP_Fastify_Caching::serve_cache();
+        ob_start([ Site_Fastify_Caching::class, 'save_cache' ]);
+        Site_Fastify_Caching::serve_cache();
     }
 
     // End caching and flush output
@@ -69,7 +69,7 @@ class WP_Fastify {
         // Apply HTML minification only if enabled and not on admin pages
         if ($enable_html_minification && !is_admin() && $_SERVER['REQUEST_METHOD'] === 'GET') {
             ob_start(function ($buffer) {
-                return WP_Fastify_Asset_Optimizer::minify_html($buffer);
+                return Site_Fastify_Asset_Optimizer::minify_html($buffer);
             });
         }
     }

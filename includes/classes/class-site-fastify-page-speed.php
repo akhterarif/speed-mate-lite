@@ -1,7 +1,7 @@
 <?php
-namespace WP_Fastify\Includes;
+namespace Site_Fastify\Includes;
 
-class WP_Fastify_Page_Speed {
+class Site_Fastify_Page_Speed {
     public function __construct() {
         add_action('wp_footer', [$this, 'calculate_metrics']);
     }

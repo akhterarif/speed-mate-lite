@@ -1,7 +1,7 @@
 <?php
-namespace WP_Fastify\Includes;
+namespace Site_Fastify\Includes;
 
-class WP_Fastify_DB_Optimizer {
+class Site_Fastify_DB_Optimizer {
     public function __construct() {
         $this->register_hooks();
     }

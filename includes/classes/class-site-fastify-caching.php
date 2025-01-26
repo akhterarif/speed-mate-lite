@@ -1,7 +1,7 @@
 <?php
-namespace WP_Fastify\Includes;
+namespace Site_Fastify\Includes;
 
-class WP_Fastify_Caching {
+class Site_Fastify_Caching {
     public function __construct() {
         $this->register_hooks();
     }
@@ -20,26 +20,26 @@ class WP_Fastify_Caching {
         }
 
         $custom_rules = <<<HTACCESS
-# WPFastify Static Asset Caching
+# SiteFastify Static Asset Caching
 <IfModule mod_headers.c>
 <FilesMatch "\.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$">
     Header set Cache-Control "max-age={$cache_duration}, public"
 </FilesMatch>
 </IfModule>
-# End WPFastify Static Asset Caching
+# End SiteFastify Static Asset Caching
 HTACCESS;
 
         $htaccess_content = file_get_contents($htaccess_file);
 
         if ($enable_static_caching) {
-            if (strpos($htaccess_content, '# WPFastify Static Asset Caching') === false) {
+            if (strpos($htaccess_content, '# SiteFastify Static Asset Caching') === false) {
                 // Add rules if not present
                 $htaccess_content .= "\n" . $custom_rules . "\n";
                 file_put_contents($htaccess_file, $htaccess_content);
             }
         } else {
             // Remove rules if present
-            $htaccess_content = preg_replace('/# WPFastify Static Asset Caching.*?# End WPFastify Static Asset Caching/s', '', $htaccess_content);
+            $htaccess_content = preg_replace('/# SiteFastify Static Asset Caching.*?# End SiteFastify Static Asset Caching/s', '', $htaccess_content);
             file_put_contents($htaccess_file, $htaccess_content);
         }
     }
@@ -57,7 +57,7 @@ HTACCESS;
     // Directory to store cached files
     public static function get_cache_dir() {
         $upload_dir = wp_upload_dir();
-        return trailingslashit($upload_dir['basedir']) . 'wp-fastify-cache/';
+        return trailingslashit($upload_dir['basedir']) . 'site-fastify-cache/';
     }
 
     public static function serve_cache() {

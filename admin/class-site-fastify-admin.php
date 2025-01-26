@@ -1,13 +1,13 @@
 <?php
 
-namespace WP_Fastify\Admin;
+namespace Site_Fastify\Admin;
 
-use WP_Fastify\Includes\WP_Fastify_Asset_Optimizer;
-use WP_Fastify\Includes\WP_Fastify_Caching;
-use WP_Fastify\Includes\WP_Fastify_DB_Optimizer;
-use WP_Fastify\Includes\WP_Fastify_Page_Speed;
+use Site_Fastify\Includes\Site_Fastify_Asset_Optimizer;
+use Site_Fastify\Includes\Site_Fastify_Caching;
+use Site_Fastify\Includes\Site_Fastify_DB_Optimizer;
+use Site_Fastify\Includes\Site_Fastify_Page_Speed;
 
-class WP_Fastify_Admin {
+class Site_Fastify_Admin {
     private $settings;
     private $caching;
     private $asset_optimizer;
@@ -22,19 +22,19 @@ class WP_Fastify_Admin {
     }
 
     private function load_dependencies() {
-        require_once plugin_dir_path(__FILE__) . 'class-wp-fastify-settings.php';
-        require_once plugin_dir_path(__FILE__) . '../includes/classes/class-wp-fastify-caching.php';
-        require_once plugin_dir_path(__FILE__) . '../includes/classes/class-wp-fastify-asset-optimizer.php';
-        require_once plugin_dir_path(__FILE__) . '../includes/classes/class-wp-fastify-db-optimizer.php';
-        require_once plugin_dir_path(__FILE__) . '../includes/classes/class-wp-fastify-page-speed.php';
+        require_once plugin_dir_path(__FILE__) . 'class-site-fastify-settings.php';
+        require_once plugin_dir_path(__FILE__) . '../includes/classes/class-site-fastify-caching.php';
+        require_once plugin_dir_path(__FILE__) . '../includes/classes/class-site-fastify-asset-optimizer.php';
+        require_once plugin_dir_path(__FILE__) . '../includes/classes/class-site-fastify-db-optimizer.php';
+        require_once plugin_dir_path(__FILE__) . '../includes/classes/class-site-fastify-page-speed.php';
     }
 
     private function init_components() {
-        $this->settings = new WP_Fastify_Settings();
-        $this->caching = new WP_Fastify_Caching();
-        $this->asset_optimizer = new WP_Fastify_Asset_Optimizer();
-        $this->db_optimizer = new WP_Fastify_DB_Optimizer();
-        $this->page_speed = new WP_Fastify_Page_Speed();
+        $this->settings = new Site_Fastify_Settings();
+        $this->caching = new Site_Fastify_Caching();
+        $this->asset_optimizer = new Site_Fastify_Asset_Optimizer();
+        $this->db_optimizer = new Site_Fastify_DB_Optimizer();
+        $this->page_speed = new Site_Fastify_Page_Speed();
     }
 
     public function register_hooks() {

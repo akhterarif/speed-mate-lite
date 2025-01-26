@@ -11,20 +11,20 @@ if (isset($_GET['cleanup']) && $_GET['cleanup'] === 'success') {
 // Prepare tab URLs
 $tabs = [
     'caching' => [
-        'label' => __('Caching', 'wp-fastify'),
-        'button' => __('Save Caching Settings', 'wp-fastify')
+        'label' => __('Caching', 'site-fastify'),
+        'button' => __('Save Caching Settings', 'site-fastify')
     ],
     'asset_optimization' => [
-        'label' => __('Asset Optimization', 'wp-fastify'),
-        'button' => __('Save Optimization Settings', 'wp-fastify')
+        'label' => __('Asset Optimization', 'site-fastify'),
+        'button' => __('Save Optimization Settings', 'site-fastify')
     ],
     'db_optimization' => [
-        'label' => __('Database Optimization', 'wp-fastify'),
-        'button' => __('Save Database Settings', 'wp-fastify')
+        'label' => __('Database Optimization', 'site-fastify'),
+        'button' => __('Save Database Settings', 'site-fastify')
     ],
     'performance_analysis' => [
-        'label' => __('Performance Analysis', 'wp-fastify'),
-        'button' => __('Performance Analysis', 'wp-fastify')
+        'label' => __('Performance Analysis', 'site-fastify'),
+        'button' => __('Performance Analysis', 'site-fastify')
     ]
 ];
 
@@ -36,7 +36,7 @@ $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
 
     <h2 class="nav-tab-wrapper">
         <?php foreach ($tabs as $tab_key => $tab_data) : ?>
-            <a href="?page=wp-fastify&tab=<?php echo esc_attr($tab_key); ?>" 
+            <a href="?page=site-fastify&tab=<?php echo esc_attr($tab_key); ?>" 
                class="nav-tab <?php echo $current_tab === $tab_key ? 'nav-tab-active' : ''; ?>">
                 <?php echo esc_html($tab_data['label']); ?>
             </a>
@@ -44,15 +44,15 @@ $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
     </h2>
     <?php if ($current_tab !== 'performance_analysis') : ?>
     <div class="notice notice-success settings-success hidden">
-        <p><?php _e('Settings saved successfully!', 'wp-fastify'); ?></p>
+        <p><?php _e('Settings saved successfully!', 'site-fastify'); ?></p>
     </div>
     <?php endif; ?>
 
     <div class="notice notice-error settings-error hidden">
-        <p><?php _e('Error saving settings. Please try again.', 'wp-fastify'); ?></p>
+        <p><?php _e('Error saving settings. Please try again.', 'site-fastify'); ?></p>
     </div>
 
-    <form id="wp-fastify-settings-form" method="post" data-tab="<?php echo esc_attr($current_tab); ?>">
+    <form id="site-fastify-settings-form" method="post" data-tab="<?php echo esc_attr($current_tab); ?>">
         <?php
         wp_nonce_field('wp_fastify_' . $current_tab . '_nonce', 'wp_fastify_nonce');
 
@@ -77,7 +77,7 @@ $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
         ?>
 
         <div class="submit-wrapper">
-            <button type="submit" class="button button-primary" id="wp-fastify-save-settings">
+            <button type="submit" class="button button-primary" id="site-fastify-save-settings">
                 <?php echo esc_html($tabs[$current_tab]['button']); ?>
             </button>
             <span class="spinner"></span>
@@ -111,10 +111,10 @@ $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
 
 <script type="text/javascript">
 jQuery(document).ready(function($) {
-    const form = $('#wp-fastify-settings-form');
+    const form = $('#site-fastify-settings-form');
     const successNotice = $('.settings-success');
     const errorNotice = $('.settings-error');
-    const submitButton = $('#wp-fastify-save-settings');
+    const submitButton = $('#site-fastify-save-settings');
     const spinner = $('.spinner');
 
     form.on('submit', function(e) {
@@ -191,7 +191,7 @@ jQuery(document).ready(function($) {
                 errorNotice.addClass('visible');                
             },
             complete: function(response) {
-                (response.success) && $('#wp-fastify-pa-google-api-key').addClass('error');
+                (response.success) && $('#site-fastify-pa-google-api-key').addClass('error');
 
                 // Re-enable submit button and hide spinner
                 submitButton.prop('disabled', false);
