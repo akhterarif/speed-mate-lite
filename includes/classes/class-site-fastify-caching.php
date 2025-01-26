@@ -18,8 +18,8 @@ class Site_Fastify_Caching {
             WP_Filesystem();
         }
 
-        $enable_static_caching = get_option('wp_fastify_caching_enable_static_caching');
-        $cache_duration = absint(get_option('wp_fastify_caching_cache_duration', 31536000)); // Default to 1 year
+        $enable_static_caching = get_option('site_fastify_caching_enable_static_caching');
+        $cache_duration = absint(get_option('site_fastify_caching_cache_duration', 31536000)); // Default to 1 year
         $htaccess_file = ABSPATH . '.htaccess';
 
         if (!$wp_filesystem->is_writable($htaccess_file)) {
@@ -50,9 +50,9 @@ class Site_Fastify_Caching {
     }
 
     public function set_cache_headers() {
-        $enable_header_caching = get_option('wp_fastify_caching_enable_header_caching', 0);
+        $enable_header_caching = get_option('site_fastify_caching_enable_header_caching', 0);
         if ($enable_header_caching) {
-            $cache_duration = absint(get_option('wp_fastify_caching_cache_duration', 31536000)); // Default to 1 year
+            $cache_duration = absint(get_option('site_fastify_caching_cache_duration', 31536000)); // Default to 1 year
             header('Cache-Control: public, max-age=' . $cache_duration);
             header('Pragma: public');
             header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $cache_duration) . ' GMT');
@@ -66,7 +66,7 @@ class Site_Fastify_Caching {
     }
 
     public static function serve_cache() {
-        $enable_cache = get_option('wp_fastify_caching_enable_cache', 0);
+        $enable_cache = get_option('site_fastify_caching_enable_cache', 0);
 
         // Serve cache only if caching is enabled
         if ($enable_cache && !is_user_logged_in() && !is_admin() && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -103,7 +103,7 @@ class Site_Fastify_Caching {
 
     // Save the output to the cache
     public static function save_cache($output) {
-        $enable_cache = get_option('wp_fastify_caching_enable_cache', 0);
+        $enable_cache = get_option('site_fastify_caching_enable_cache', 0);
 
         // Save to cache only if caching is enabled
         if ($enable_cache && !is_user_logged_in() && !is_admin() && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {

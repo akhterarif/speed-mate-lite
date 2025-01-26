@@ -44,14 +44,14 @@ class Site_Fastify_Admin {
     }
 
     public function register_ajax_handlers() {
-        add_action('wp_ajax_wp_fastify_save_settings', [$this, 'handle_save_settings']);
-        add_action('wp_ajax_wp_fastify_get_speed_metrics', [$this->page_speed, 'get_speed_metrics']);
+        add_action('wp_ajax_site_fastify_save_settings', [$this, 'handle_save_settings']);
+        add_action('wp_ajax_site_fastify_get_speed_metrics', [$this->page_speed, 'get_speed_metrics']);
     }
     
     public function handle_save_settings() {
         // Verify nonce
         $tab = isset($_POST['tab']) ? sanitize_key($_POST['tab']) : '';
-        if (!check_ajax_referer('wp_fastify_' . $tab . '_nonce', 'wp_fastify_nonce', false)) {
+        if (!check_ajax_referer('site_fastify_' . $tab . '_nonce', 'site_fastify_nonce', false)) {
             wp_send_json_error(['message' => 'Invalid security token.']);
         }
     
@@ -95,17 +95,17 @@ class Site_Fastify_Admin {
         $response = ['htaccess_updated' => false];
         
         // Update cache settings
-        update_option('wp_fastify_caching_enable_cache', 
-            isset($data['wp_fastify_caching_enable_cache']) ? 1 : 0);
+        update_option('site_fastify_caching_enable_cache', 
+            isset($data['site_fastify_caching_enable_cache']) ? 1 : 0);
         
-        update_option('wp_fastify_caching_cache_duration', 
-            absint($data['wp_fastify_caching_cache_duration']));
+        update_option('site_fastify_caching_cache_duration', 
+            absint($data['site_fastify_caching_cache_duration']));
         
-        $static_caching = isset($data['wp_fastify_caching_enable_static_caching']) ? 1 : 0;
-        update_option('wp_fastify_caching_enable_static_caching', $static_caching);
+        $static_caching = isset($data['site_fastify_caching_enable_static_caching']) ? 1 : 0;
+        update_option('site_fastify_caching_enable_static_caching', $static_caching);
         
         // Update htaccess if static caching setting changed
-        if ($static_caching != get_option('wp_fastify_caching_enable_static_caching')) {
+        if ($static_caching != get_option('site_fastify_caching_enable_static_caching')) {
             $this->caching->update_htaccess_based_on_setting();
             $response['htaccess_updated'] = true;
         }
@@ -117,20 +117,20 @@ class Site_Fastify_Admin {
         $response = ['cache_cleared' => false];
         
         // Update optimization settings
-        update_option('wp_fastify_asset_optimization_enable_minification', 
-            isset($data['wp_fastify_asset_optimization_enable_minification']) ? 1 : 0);
+        update_option('site_fastify_asset_optimization_enable_minification', 
+            isset($data['site_fastify_asset_optimization_enable_minification']) ? 1 : 0);
         
-        update_option('wp_fastify_asset_optimization_enable_html_minification', 
-            isset($data['wp_fastify_asset_optimization_enable_html_minification']) ? 1 : 0);
+        update_option('site_fastify_asset_optimization_enable_html_minification', 
+            isset($data['site_fastify_asset_optimization_enable_html_minification']) ? 1 : 0);
         
-        update_option('wp_fastify_asset_optimization_enable_image_lazy_loading', 
-            isset($data['wp_fastify_asset_optimization_enable_image_lazy_loading']) ? 1 : 0);
+        update_option('site_fastify_asset_optimization_enable_image_lazy_loading', 
+            isset($data['site_fastify_asset_optimization_enable_image_lazy_loading']) ? 1 : 0);
 
-        update_option('wp_fastify_asset_optimization_exclusions', 
-            sanitize_textarea_field($data['wp_fastify_asset_optimization_exclusions']));
+        update_option('site_fastify_asset_optimization_exclusions', 
+            sanitize_textarea_field($data['site_fastify_asset_optimization_exclusions']));
 
-        update_option('wp_fastify_asset_optimization_combine_css', 
-            isset($data['wp_fastify_asset_optimization_combine_css']) ? 1 : 0);
+        update_option('site_fastify_asset_optimization_combine_css', 
+            isset($data['site_fastify_asset_optimization_combine_css']) ? 1 : 0);
         
         // Clear asset cache if settings changed
         $this->caching::clear_cache();
@@ -141,32 +141,32 @@ class Site_Fastify_Admin {
     
     private function save_db_optimization_settings($data) {
         // Update database optimization settings
-        update_option('wp_fastify_db_optimization_revisions_cleanup_enable', 
-            isset($data['wp_fastify_db_optimization_revisions_cleanup_enable']) ? 1 : 0);
+        update_option('site_fastify_db_optimization_revisions_cleanup_enable', 
+            isset($data['site_fastify_db_optimization_revisions_cleanup_enable']) ? 1 : 0);
         
-        update_option('wp_fastify_db_optimization_revisions_cleanup_schedule', 
-            sanitize_key($data['wp_fastify_db_optimization_revisions_cleanup_schedule']));
+        update_option('site_fastify_db_optimization_revisions_cleanup_schedule', 
+            sanitize_key($data['site_fastify_db_optimization_revisions_cleanup_schedule']));
         
-        update_option('wp_fastify_db_optimization_trash_spam_cleanup_enable', 
-            isset($data['wp_fastify_db_optimization_trash_spam_cleanup_enable']) ? 1 : 0);
+        update_option('site_fastify_db_optimization_trash_spam_cleanup_enable', 
+            isset($data['site_fastify_db_optimization_trash_spam_cleanup_enable']) ? 1 : 0);
         
-        update_option('wp_fastify_db_optimization_trash_spam_cleanup_schedule', 
-            sanitize_key($data['wp_fastify_db_optimization_trash_spam_cleanup_schedule']));
+        update_option('site_fastify_db_optimization_trash_spam_cleanup_schedule', 
+            sanitize_key($data['site_fastify_db_optimization_trash_spam_cleanup_schedule']));
         
         return ['schedule_updated' => true];
     }
 
 
     private function show_performance_analysis($data) {
-        update_option('wp_fastify_pa_google_api_key', 
-            sanitize_text_field($data['wp_fastify_pa_google_api_key']));
+        update_option('site_fastify_pa_google_api_key', 
+            sanitize_text_field($data['site_fastify_pa_google_api_key']));
 
 
-        error_log(wp_json_encode(get_option('wp_fastify_pa_google_api_key', '')));
+        error_log(wp_json_encode(get_option('site_fastify_pa_google_api_key', '')));
         
         // Update database optimization settings
         $url = get_home_url(); // Use site's home URL
-        $api_key = get_option('wp_fastify_pa_google_api_key', ''); // Replace with your actual API key
+        $api_key = get_option('site_fastify_pa_google_api_key', ''); // Replace with your actual API key
         $api_url = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=$url&key=$api_key";
 
 

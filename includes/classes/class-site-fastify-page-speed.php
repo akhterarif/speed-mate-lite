@@ -68,7 +68,7 @@ class Site_Fastify_Page_Speed {
      * @return int
      */
     private function get_file_size($url) {
-        $file_path = ABSPATH . ltrim(parse_url($url, PHP_URL_PATH), '/');
+        $file_path = ABSPATH . ltrim(wp_parse_url($url, PHP_URL_PATH), '/'); // Use wp_parse_url instead of parse_url
         if (file_exists($file_path)) {
             return filesize($file_path);
         }
@@ -86,6 +86,5 @@ class Site_Fastify_Page_Speed {
         ];
 
         wp_send_json($metrics);
-        
     }
 }

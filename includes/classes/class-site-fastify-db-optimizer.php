@@ -9,33 +9,33 @@ class Site_Fastify_DB_Optimizer {
     public function register_hooks() {
         // Move all database-related hooks here
         add_action('wp', [$this, 'schedule_cleanup_tasks']);
-        add_action('wp_fastify_revisions_cleanup_cron', [$this, 'cleanup_revisions']);
-        add_action('wp_fastify_trash_spam_cleanup_cron', [$this, 'cleanup_trash_and_spam']);
+        add_action('site_fastify_revisions_cleanup_cron', [$this, 'cleanup_revisions']);
+        add_action('site_fastify_trash_spam_cleanup_cron', [$this, 'cleanup_trash_and_spam']);
 
         // Clear scheduled task when disabling
-        add_action('update_option_wp_fastify_db_optimization_revisions_cleanup_enable', function ($old_value, $value) {
+        add_action('update_option_site_fastify_db_optimization_revisions_cleanup_enable', function ($old_value, $value) {
             if (!$value) {
-                wp_clear_scheduled_hook('wp_fastify_revisions_cleanup_cron');
+                wp_clear_scheduled_hook('site_fastify_revisions_cleanup_cron');
             }
         }, 10, 2);
 
         // Clear scheduled task when disabling
-        add_action('update_option_wp_fastify_db_optimization_trash_spam_cleanup_enable', function ($old_value, $value) {
+        add_action('update_option_site_fastify_db_optimization_trash_spam_cleanup_enable', function ($old_value, $value) {
             if (!$value) {
-                wp_clear_scheduled_hook('wp_fastify_trash_spam_cleanup_cron');
+                wp_clear_scheduled_hook('site_fastify_trash_spam_cleanup_cron');
             }
         }, 10, 2);
 
         // AJAX hooks for manual revisions cleanup
-        add_action('wp_ajax_wp_fastify_revisions_cleanup', [ $this, 'ajax_revisions_cleanup' ]);
+        add_action('wp_ajax_site_fastify_revisions_cleanup', [ $this, 'ajax_revisions_cleanup' ]);
 
         // AJAX hooks for manual trash and spam cleanup
-        add_action('wp_ajax_wp_fastify_trash_spam_cleanup', [ $this, 'ajax_trash_spam_cleanup' ]);
+        add_action('wp_ajax_site_fastify_trash_spam_cleanup', [ $this, 'ajax_trash_spam_cleanup' ]);
     }
 
     public function ajax_revisions_cleanup() {
         // Check nonce for security
-        if (!isset($_POST['nonce']) || !wp_verify_nonce(wp_unslash($_POST['nonce']), 'wp_fastify_revisions_cleanup_nonce')) { // Use wp_unslash here
+        if (!isset($_POST['nonce']) || !wp_verify_nonce(wp_unslash($_POST['nonce']), 'site_fastify_revisions_cleanup_nonce')) { // Use wp_unslash here
             wp_send_json_error(['message' => 'Nonce verification failed.']);
         }
     
@@ -53,7 +53,7 @@ class Site_Fastify_DB_Optimizer {
 
     public function ajax_trash_spam_cleanup() {
         // Check nonce for security
-        if (!isset($_POST['nonce']) || !wp_verify_nonce(wp_unslash($_POST['nonce']), 'wp_fastify_trash_spam_cleanup_nonce')) { // Use wp_unslash here
+        if (!isset($_POST['nonce']) || !wp_verify_nonce(wp_unslash($_POST['nonce']), 'site_fastify_trash_spam_cleanup_nonce')) { // Use wp_unslash here
             wp_send_json_error(['message' => 'Nonce verification failed.']);
         }
     
@@ -73,8 +73,8 @@ class Site_Fastify_DB_Optimizer {
      * Cleans up the revisions of a post 
      */
     public function cleanup_revisions() {
-        $enable_revisions_cleanup = get_option('wp_fastify_db_optimization_revisions_cleanup_enable', 0);
-        $keep_count = (int) get_option('wp_fastify_db_optimization_revisions_cleanup_keep_count', 5);
+        $enable_revisions_cleanup = get_option('site_fastify_db_optimization_revisions_cleanup_enable', 0);
+        $keep_count = (int) get_option('site_fastify_db_optimization_revisions_cleanup_keep_count', 5);
 
         if ($enable_revisions_cleanup) {
             global $wpdb;
@@ -119,7 +119,7 @@ class Site_Fastify_DB_Optimizer {
     }
 
     public function cleanup_trash_and_spam() {
-        $enable_trash_spam_cleanup = get_option('wp_fastify_db_optimization_trash_spam_cleanup_enable', 0);
+        $enable_trash_spam_cleanup = get_option('site_fastify_db_optimization_trash_spam_cleanup_enable', 0);
 
         if ($enable_trash_spam_cleanup) {
             global $wpdb;
@@ -167,14 +167,14 @@ class Site_Fastify_DB_Optimizer {
     }
 
     public function schedule_cleanup_tasks() {
-        if (!wp_next_scheduled('wp_fastify_revisions_cleanup_cron') && get_option('wp_fastify_db_optimization_revisions_cleanup_enable', 0)) {
-            $schedule = get_option('wp_fastify_db_optimization_revisions_cleanup_schedule', 'weekly');
-            wp_schedule_event(time(), $schedule, 'wp_fastify_revisions_cleanup_cron');
+        if (!wp_next_scheduled('site_fastify_revisions_cleanup_cron') && get_option('site_fastify_db_optimization_revisions_cleanup_enable', 0)) {
+            $schedule = get_option('site_fastify_db_optimization_revisions_cleanup_schedule', 'weekly');
+            wp_schedule_event(time(), $schedule, 'site_fastify_revisions_cleanup_cron');
         }
 
-        if (!wp_next_scheduled('wp_fastify_trash_spam_cleanup_cron') && get_option('wp_fastify_db_optimization_trash_spam_cleanup_enable', 0)) {
-            $schedule = get_option('wp_fastify_db_optimization_trash_spam_cleanup_schedule', 'weekly');
-            wp_schedule_event(time(), $schedule, 'wp_fastify_trash_spam_cleanup_cron');
+        if (!wp_next_scheduled('site_fastify_trash_spam_cleanup_cron') && get_option('site_fastify_db_optimization_trash_spam_cleanup_enable', 0)) {
+            $schedule = get_option('site_fastify_db_optimization_trash_spam_cleanup_schedule', 'weekly');
+            wp_schedule_event(time(), $schedule, 'site_fastify_trash_spam_cleanup_cron');
         }
     }
 }

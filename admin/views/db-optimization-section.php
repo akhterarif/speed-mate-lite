@@ -114,25 +114,30 @@ if (!defined('ABSPATH')) {
         </tr>
     </thead>
     <tbody>
+        <?php
+        global $wpdb;
+        $stats = [
+            'revisions' => $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = 'revision'"),
+            'trash_posts' => $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_status = 'trash'"),
+            'spam_comments' => $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = 'spam'"),
+            'trash_comments' => $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = 'trash'")
+        ];
+        ?>
         <tr>
-            <td><?php esc_html_e('Total Scripts', 'site-fastify'); ?></td>
-            <td><?php echo esc_html($metrics['Total Scripts']); ?></td>
+            <td><?php esc_html_e('Post/Page Revisions', 'site-fastify'); ?></td>
+            <td><?php echo esc_html(number_format($stats['revisions'])); ?></td>
         </tr>
         <tr>
-            <td><?php esc_html_e('Total Styles', 'site-fastify'); ?></td>
-            <td><?php echo esc_html($metrics['Total Styles']); ?></td>
+            <td><?php esc_html_e('Trashed Posts', 'site-fastify'); ?></td>
+            <td><?php echo esc_html(number_format($stats['trash_posts'])); ?></td>
         </tr>
         <tr>
-            <td><?php esc_html_e('Total Requests', 'site-fastify'); ?></td>
-            <td><?php echo esc_html($metrics['Total Requests']); ?></td>
+            <td><?php esc_html_e('Spam Comments', 'site-fastify'); ?></td>
+            <td><?php echo esc_html(number_format($stats['spam_comments'])); ?></td>
         </tr>
         <tr>
-            <td><?php esc_html_e('Page Load Time (seconds)', 'site-fastify'); ?></td>
-            <td><?php echo esc_html($metrics['Page Load Time (seconds)']); ?></td>
-        </tr>
-        <tr>
-            <td><?php esc_html_e('Estimated Page Size', 'site-fastify'); ?></td>
-            <td><?php echo esc_html($metrics['Estimated Page Size']); ?></td>
+            <td><?php esc_html_e('Trashed Comments', 'site-fastify'); ?></td>
+            <td><?php echo esc_html(number_format($stats['trash_comments'])); ?></td>
         </tr>
     </tbody>
 </table>

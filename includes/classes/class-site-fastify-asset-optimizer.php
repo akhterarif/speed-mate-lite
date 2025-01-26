@@ -5,7 +5,7 @@ class Site_Fastify_Asset_Optimizer {
     private $exclusions;
 
     public function __construct() {
-        $this->exclusions = get_option('wp_fastify_asset_optimization_exclusions', '');
+        $this->exclusions = get_option('site_fastify_asset_optimization_exclusions', '');
         $this->register_hooks();
     }
 
@@ -22,8 +22,8 @@ class Site_Fastify_Asset_Optimizer {
      * @return string Minified asset URL or original URL if minification isn't applied.
      */
     public static function minify_assets($src, $handle) {
-        $enable_minification = get_option('wp_fastify_asset_optimization_enable_minification', 0);
-        $exclusions = array_filter(array_map('trim', explode("\n", get_option('wp_fastify_asset_optimization_exclusions', ''))));
+        $enable_minification = get_option('site_fastify_asset_optimization_enable_minification', 0);
+        $exclusions = array_filter(array_map('trim', explode("\n", get_option('site_fastify_asset_optimization_exclusions', ''))));
 
         // Skip minification for admin pages or excluded handles
         if (is_admin() || in_array($handle, ['wp-edit-post', 'wp-block-editor', 'wp-blocks', 'wp-components'])) {

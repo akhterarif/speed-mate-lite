@@ -54,7 +54,7 @@ $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
 
     <form id="site-fastify-settings-form" method="post" data-tab="<?php echo esc_attr($current_tab); ?>">
         <?php
-        wp_nonce_field('wp_fastify_' . $current_tab . '_nonce', 'wp_fastify_nonce');
+        wp_nonce_field('site_fastify_' . $current_tab . '_nonce', 'site_fastify_nonce');
 
         // Load the appropriate section template
         switch ($current_tab) {
@@ -130,7 +130,7 @@ jQuery(document).ready(function($) {
 
         // Collect form data
         const formData = new FormData(this);
-        formData.append('action', 'wp_fastify_save_settings');
+        formData.append('action', 'site_fastify_save_settings');
         formData.append('tab', form.data('tab'));
 
         // Make AJAX request
@@ -209,14 +209,14 @@ jQuery(document).ready(function($) {
     switch(form.data('tab')) {
         case 'caching':
             // Add any caching-specific UI handlers
-            $('[name="wp_fastify_caching_enable_cache"]').on('change', function() {
+            $('[name="site_fastify_caching_enable_cache"]').on('change', function() {
                 // Handle dependencies
             });
             break;
             
         case 'asset_optimization':
             // Add any asset optimization-specific UI handlers
-            $('[name="wp_fastify_asset_optimization_enable_minification"]').on('change', function() {
+            $('[name="site_fastify_asset_optimization_enable_minification"]').on('change', function() {
                 // Handle dependencies
             });
             break;

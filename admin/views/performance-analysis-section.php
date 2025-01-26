@@ -61,7 +61,7 @@ $metrics = [
     </ol>
 
         <label for="google-api-key"><?php esc_html_e('Google API Key', 'site-fastify'); ?>:</label>
-        <input type="text" id="site-fastify-pa-google-api-key" name="wp_fastify_pa_google_api_key" value="<?php echo esc_attr(get_option('wp_fastify_pa_google_api_key')); ?>" class="" />
+        <input type="text" id="site-fastify-pa-google-api-key" name="site_fastify_pa_google_api_key" value="<?php echo esc_attr(get_option('site_fastify_pa_google_api_key')); ?>" class="" />
 
 
     <div id="performance-results">

@@ -41,5 +41,12 @@ class Site_Fastify_Assets {
             true
         );
 
+
+        // Pass AJAX URL and nonce to JavaScript
+        wp_localize_script('site-fastify-admin-script', 'siteFastifyAjax', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'trashSpamNonce' => wp_create_nonce('site_fastify_trash_spam_cleanup_nonce'),
+            'revisionsCleanupNonce' => wp_create_nonce('site_fastify_revisions_cleanup_nonce'),
+        ]);
     }
 }

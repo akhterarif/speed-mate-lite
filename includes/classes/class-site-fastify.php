@@ -34,7 +34,7 @@ class Site_Fastify {
 
     // Initialize the caching functionality
     public function run() {
-        $enable_cache = get_option('wp_fastify_caching_enable_cache', 0);
+        $enable_cache = get_option('site_fastify_caching_enable_cache', 0);
 
         if ($enable_cache) {
             add_action('template_redirect', [ $this, 'start_caching' ]);
@@ -64,7 +64,7 @@ class Site_Fastify {
 
     // Start HTML Minification
     public function start_html_minification() {
-        $enable_html_minification = get_option('wp_fastify_asset_optimization_enable_html_minification', 0);
+        $enable_html_minification = get_option('site_fastify_asset_optimization_enable_html_minification', 0);
 
         // Apply HTML minification only if enabled and not on admin pages
         if ($enable_html_minification && !is_admin() && $_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -84,7 +84,7 @@ class Site_Fastify {
 
     // Enables lazy loading for images 
     public function apply_lazy_loading_to_images($content) {
-        $enable_lazy_loading = get_option('wp_fastify_asset_optimization_enable_html_minification', 0);
+        $enable_lazy_loading = get_option('site_fastify_asset_optimization_enable_html_minification', 0);
 
         // Apply lazy loading only if the setting is enabled
         if ($enable_lazy_loading) {

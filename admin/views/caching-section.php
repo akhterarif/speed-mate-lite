@@ -10,9 +10,9 @@ if (!defined('ABSPATH')) {
         <th scope="row"><?php esc_html_e('Enable Page Caching', 'site-fastify'); ?></th>
         <td>
             <input type="checkbox" 
-                   name="wp_fastify_caching_enable_cache" 
+                   name="site_fastify_caching_enable_cache" 
                    value="1" 
-                   <?php checked(1, get_option('wp_fastify_caching_enable_cache', 0)); ?> />
+                   <?php checked(1, get_option('site_fastify_caching_enable_cache', 0)); ?> />
             <p class="description">
                 <?php esc_html_e('Enable caching to improve page load times.', 'site-fastify'); ?>
             </p>
@@ -23,8 +23,8 @@ if (!defined('ABSPATH')) {
         <th scope="row"><?php esc_html_e('Cache Duration', 'site-fastify'); ?></th>
         <td>
             <input type="number" 
-                   name="wp_fastify_caching_cache_duration" 
-                   value="<?php echo esc_attr(get_option('wp_fastify_caching_cache_duration', 31536000)); ?>" 
+                   name="site_fastify_caching_cache_duration" 
+                   value="<?php echo esc_attr(get_option('site_fastify_caching_cache_duration', 31536000)); ?>" 
                    min="0" 
                    step="1" />
             <p class="description">
@@ -37,9 +37,9 @@ if (!defined('ABSPATH')) {
         <th scope="row"><?php esc_html_e('Static Asset Caching', 'site-fastify'); ?></th>
         <td>
             <input type="checkbox" 
-                   name="wp_fastify_caching_enable_static_caching" 
+                   name="site_fastify_caching_enable_static_caching" 
                    value="1" 
-                   <?php checked(1, get_option('wp_fastify_caching_enable_static_caching', 0)); ?> />
+                   <?php checked(1, get_option('site_fastify_caching_enable_static_caching', 0)); ?> />
             <p class="description">
                 <?php esc_html_e('Add caching rules to .htaccess for static assets (CSS, JS, images, etc).', 'site-fastify'); ?>
             </p>

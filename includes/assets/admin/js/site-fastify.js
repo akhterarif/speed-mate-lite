@@ -8,12 +8,12 @@ jQuery(document).ready(function ($) {
 
     // Send AJAX request
     $.ajax({
-      url: wpFastifyAjax.ajaxUrl,
+      url: siteFastifyAjax.ajaxUrl,
       type: "POST",
       dataType: "json",
       data: {
-        action: "wp_fastify_trash_spam_cleanup",
-        nonce: wpFastifyAjax.trashSpamNonce,
+        action: "site_fastify_trash_spam_cleanup",
+        nonce: siteFastifyAjax.trashSpamNonce,
       },
       success: function (response) {
         if (response.success) {
@@ -54,12 +54,12 @@ jQuery(document).ready(function ($) {
 
     // Send AJAX request
     $.ajax({
-      url: wpFastifyAjax.ajaxUrl,
+      url: siteFastifyAjax.ajaxUrl,
       type: "POST",
       dataType: "json",
       data: {
-        action: "wp_fastify_revisions_cleanup",
-        nonce: wpFastifyAjax.revisionsCleanupNonce,
+        action: "site_fastify_revisions_cleanup",
+        nonce: siteFastifyAjax.revisionsCleanupNonce,
       },
       success: function (response) {
         if (response.success) {
