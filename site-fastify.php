@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Site Fastify
+ * Plugin Name: Site-Fastify
  * Description: A WordPress performance optimization plugin.
  * Version: 1.0.0
  * Author: Arif

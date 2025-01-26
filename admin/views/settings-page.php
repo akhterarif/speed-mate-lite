@@ -44,12 +44,12 @@ $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
     </h2>
     <?php if ($current_tab !== 'performance_analysis') : ?>
     <div class="notice notice-success settings-success hidden">
-        <p><?php _e('Settings saved successfully!', 'site-fastify'); ?></p>
+        <p><?php esc_html_e('Settings saved successfully!', 'site-fastify'); ?></p>
     </div>
     <?php endif; ?>
 
     <div class="notice notice-error settings-error hidden">
-        <p><?php _e('Error saving settings. Please try again.', 'site-fastify'); ?></p>
+        <p><?php esc_html_e('Error saving settings. Please try again.', 'site-fastify'); ?></p>
     </div>
 
     <form id="site-fastify-settings-form" method="post" data-tab="<?php echo esc_attr($current_tab); ?>">

@@ -1,11 +1,11 @@
 === Site-Fastify ===  
-Contributors: Akhter-uz-zaman Arif, akhterarif   
+Contributors: akhterarif   
 Tags: caching, performance, optimization, lazy loading, database optimization  
 Requires at least: 5.0  
-Tested up to: 6.3  
+Tested up to: 6.3 < 6.7  
 Requires PHP: 7.4  
 Stable tag: 1.0.0  
-License: GPLv3  
+License: GPLv2 or later  
 License URI: https://www.gnu.org/licenses/gpl-3.0.html  
 
 Speed up your WordPress website with Site-Fastify. Caching, asset optimization, lazy loading, and database cleanup made simple and effective.  

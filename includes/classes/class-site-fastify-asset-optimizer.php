@@ -42,19 +42,27 @@ class Site_Fastify_Asset_Optimizer {
         }
 
         if ($enable_minification && strpos($src, '.min.') === false) {
-            $parsed_url = parse_url($src);
+            $parsed_url = wp_parse_url($src); // Replaced parse_url with wp_parse_url
             $file_path = isset($parsed_url['path']) ? ABSPATH . ltrim($parsed_url['path'], '/') : '';
             $file_path = preg_replace('#/+#', '/', $file_path);
 
             if (file_exists($file_path)) {
-                $content = file_get_contents($file_path);
+                // Use WP_Filesystem to get the file content
+                global $wp_filesystem;
+                if (empty($wp_filesystem)) {
+                    require_once ABSPATH . 'wp-admin/includes/file.php';
+                    WP_Filesystem();
+                }
+
+                $content = $wp_filesystem->get_contents($file_path); // Use WP_Filesystem
                 $ext = pathinfo($file_path, PATHINFO_EXTENSION);
 
                 if (in_array($ext, ['css', 'js'])) {
                     $minified_content = Site_Fastify_Asset_Optimizer::minify_content($content, $ext);
                     $minified_path = preg_replace('/\.' . $ext . '$/', '.min.' . $ext, $file_path);
 
-                    file_put_contents($minified_path, $minified_content);
+                    // Use WP_Filesystem to save the minified content
+                    $wp_filesystem->put_contents($minified_path, $minified_content); // WP_Filesystem
 
                     return str_replace(ABSPATH, site_url('/'), $minified_path);
                 }
@@ -83,7 +91,6 @@ class Site_Fastify_Asset_Optimizer {
         // Return unmodified content if the type is unsupported
         return $content;
     }
-
 
     public static function minify_html($html) {
         // Remove comments (excluding conditional comments for IE)

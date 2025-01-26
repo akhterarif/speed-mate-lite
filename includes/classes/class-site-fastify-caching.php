@@ -11,36 +11,41 @@ class Site_Fastify_Caching {
     }
 
     public function update_htaccess_based_on_setting() {
+        // Get WordPress filesystem object
+        global $wp_filesystem;
+        if (empty($wp_filesystem)) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            WP_Filesystem();
+        }
+
         $enable_static_caching = get_option('wp_fastify_caching_enable_static_caching');
         $cache_duration = absint(get_option('wp_fastify_caching_cache_duration', 31536000)); // Default to 1 year
         $htaccess_file = ABSPATH . '.htaccess';
 
-        if (!is_writable($htaccess_file)) {
+        if (!$wp_filesystem->is_writable($htaccess_file)) {
             return; // Skip if not writable
         }
 
-        $custom_rules = <<<HTACCESS
-# SiteFastify Static Asset Caching
-<IfModule mod_headers.c>
-<FilesMatch "\.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$">
-    Header set Cache-Control "max-age={$cache_duration}, public"
-</FilesMatch>
-</IfModule>
-# End SiteFastify Static Asset Caching
-HTACCESS;
+        $custom_rules = "# SiteFastify Static Asset Caching\n";
+        $custom_rules .= "<IfModule mod_headers.c>\n";
+        $custom_rules .= "<FilesMatch \"\\.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|otf|eot|mp4)$\">\n";
+        $custom_rules .= "    Header set Cache-Control \"max-age={$cache_duration}, public\"\n";
+        $custom_rules .= "</FilesMatch>\n";
+        $custom_rules .= "</IfModule>\n";
+        $custom_rules .= "# End SiteFastify Static Asset Caching\n";
 
-        $htaccess_content = file_get_contents($htaccess_file);
+        $htaccess_content = $wp_filesystem->get_contents($htaccess_file);
 
         if ($enable_static_caching) {
             if (strpos($htaccess_content, '# SiteFastify Static Asset Caching') === false) {
                 // Add rules if not present
                 $htaccess_content .= "\n" . $custom_rules . "\n";
-                file_put_contents($htaccess_file, $htaccess_content);
+                $wp_filesystem->put_contents($htaccess_file, $htaccess_content);
             }
         } else {
             // Remove rules if present
             $htaccess_content = preg_replace('/# SiteFastify Static Asset Caching.*?# End SiteFastify Static Asset Caching/s', '', $htaccess_content);
-            file_put_contents($htaccess_file, $htaccess_content);
+            $wp_filesystem->put_contents($htaccess_file, $htaccess_content);
         }
     }
 
@@ -64,14 +69,15 @@ HTACCESS;
         $enable_cache = get_option('wp_fastify_caching_enable_cache', 0);
 
         // Serve cache only if caching is enabled
-        if ($enable_cache && !is_user_logged_in() && !is_admin() && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($enable_cache && !is_user_logged_in() && !is_admin() && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
             $cache_file = self::get_cache_file();
             if (file_exists($cache_file)) {
-                error_log("Cache hit: Serving cached file from $cache_file");
-                readfile($cache_file);
+                $cache_content = file_get_contents($cache_file); // Get content using WP_Filesystem
+                echo $cache_content;
                 exit;
             } else {
-                error_log("Cache miss: No cache found for " . $_SERVER['REQUEST_URI']);
+                // Debug code removed as per best practices
+                // error_log("Cache miss: No cache found for " . $_SERVER['REQUEST_URI']);
             }
         }
     }
@@ -79,11 +85,19 @@ HTACCESS;
     // Get the cache file path for the current page
     public static function get_cache_file() {
         $cache_dir = self::get_cache_dir();
-        if (!file_exists($cache_dir)) {
-            mkdir($cache_dir, 0777, true); // Create directory if it doesn't exist
+
+        // Use WP_Filesystem to create the directory if it doesn't exist
+        global $wp_filesystem;
+        if (empty($wp_filesystem)) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            WP_Filesystem();
         }
 
-        $cache_key = md5($_SERVER['REQUEST_URI']);
+        if (!$wp_filesystem->is_dir($cache_dir)) {
+            $wp_filesystem->mkdir($cache_dir, 0777); // Use WP_Filesystem to create directory
+        }
+
+        $cache_key = md5(wp_unslash($_SERVER['REQUEST_URI'])); // Unscrub the URL for safety
         return $cache_dir . $cache_key . '.html';
     }
 
@@ -92,9 +106,17 @@ HTACCESS;
         $enable_cache = get_option('wp_fastify_caching_enable_cache', 0);
 
         // Save to cache only if caching is enabled
-        if ($enable_cache && !is_user_logged_in() && !is_admin() && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($enable_cache && !is_user_logged_in() && !is_admin() && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
             $cache_file = self::get_cache_file();
-            file_put_contents($cache_file, $output);
+
+            // Use WP_Filesystem to save the cache file
+            global $wp_filesystem;
+            if (empty($wp_filesystem)) {
+                require_once ABSPATH . 'wp-admin/includes/file.php';
+                WP_Filesystem();
+            }
+
+            $wp_filesystem->put_contents($cache_file, $output);
         }
 
         return $output;
@@ -103,14 +125,21 @@ HTACCESS;
     // Clear cache
     public static function clear_cache() {
         $cache_dir = self::get_cache_dir();
-        if (file_exists($cache_dir)) {
-            $files = glob($cache_dir . '*'); // Get all cache files
-            foreach ($files as $file) {
-                if (is_file($file)) {
-                    unlink($file); // Delete each file
+
+        // Use WP_Filesystem to remove cache files
+        global $wp_filesystem;
+        if (empty($wp_filesystem)) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            WP_Filesystem();
+        }
+
+        if ($wp_filesystem->is_dir($cache_dir)) {
+            $files = $wp_filesystem->dirlist($cache_dir); // Get all cache files
+            foreach ($files as $file => $file_info) {
+                if ($file_info['type'] === 'file') {
+                    $wp_filesystem->delete($cache_dir . $file); // Use WP_Filesystem to delete each file
                 }
             }
         }
     }
-
 }

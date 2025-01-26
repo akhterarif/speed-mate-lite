@@ -12,35 +12,35 @@ $metrics = [
 ];
 ?>
 
-<h3><?php _e('Page Health', 'site-fastify'); ?></h3>
+<h3><?php esc_html_e('Page Health', 'site-fastify'); ?></h3>
 
 <table class="wp-list-table widefat fixed striped">
     <thead>
         <tr>
-            <th><?php _e('Item', 'site-fastify'); ?></th>
-            <th><?php _e('Count', 'site-fastify'); ?></th>
+            <th><?php esc_html_e('Item', 'site-fastify'); ?></th>
+            <th><?php esc_html_e('Count', 'site-fastify'); ?></th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td><?php _e('Total Scripts', 'site-fastify'); ?></td>
-            <td><?php echo $metrics['Total Scripts']; ?></td>
+            <td><?php esc_html_e('Total Scripts', 'site-fastify'); ?></td>
+            <td><?php echo esc_html($metrics['Total Scripts']); ?></td>
         </tr>
         <tr>
-            <td><?php _e('Total Styles', 'site-fastify'); ?></td>
-            <td><?php echo $metrics['Total Styles']; ?></td>
+            <td><?php esc_html_e('Total Styles', 'site-fastify'); ?></td>
+            <td><?php echo esc_html($metrics['Total Styles']); ?></td>
         </tr>
         <tr>
-            <td><?php _e('Total Requests', 'site-fastify'); ?></td>
-            <td><?php echo $metrics['Total Requests']; ?></td>
+            <td><?php esc_html_e('Total Requests', 'site-fastify'); ?></td>
+            <td><?php echo esc_html($metrics['Total Requests']); ?></td>
         </tr>
         <tr>
-            <td><?php _e('Page Load Time (seconds)', 'site-fastify'); ?></td>
-            <td><?php echo $metrics['Page Load Time (seconds)']; ?></td>
+            <td><?php esc_html_e('Page Load Time (seconds)', 'site-fastify'); ?></td>
+            <td><?php echo esc_html($metrics['Page Load Time (seconds)']); ?></td>
         </tr>
         <tr>
-            <td><?php _e('Estimated Page Size', 'site-fastify'); ?></td>
-            <td><?php echo $metrics['Estimated Page Size']; ?></td>
+            <td><?php esc_html_e('Estimated Page Size', 'site-fastify'); ?></td>
+            <td><?php echo esc_html($metrics['Estimated Page Size']); ?></td>
         </tr>
     </tbody>
 </table>
@@ -60,7 +60,7 @@ $metrics = [
         <li>While you click on the <strong>Performance Analysis</strong> button, it will load data in the Page-insight section using the above API-KEY.</li>
     </ol>
 
-        <label for="google-api-key"><?php _e('Google API Key', 'site-fastify'); ?>:</label>
+        <label for="google-api-key"><?php esc_html_e('Google API Key', 'site-fastify'); ?>:</label>
         <input type="text" id="site-fastify-pa-google-api-key" name="wp_fastify_pa_google_api_key" value="<?php echo esc_attr(get_option('wp_fastify_pa_google_api_key')); ?>" class="" />
 
 
