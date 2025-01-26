@@ -115,13 +115,44 @@ if (!defined('ABSPATH')) {
     </thead>
     <tbody>
         <?php
+        
         global $wpdb;
+
+        // Cache key for each statistic
+        $cache_key_revisions = 'site_fastify_revisions_count';
+        $cache_key_trash_posts = 'site_fastify_trash_posts_count';
+        $cache_key_spam_comments = 'site_fastify_spam_comments_count';
+        $cache_key_trash_comments = 'site_fastify_trash_comments_count';
+
+        // Try to get the cached values first
         $stats = [
-            'revisions' => $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = 'revision'"),
-            'trash_posts' => $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_status = 'trash'"),
-            'spam_comments' => $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = 'spam'"),
-            'trash_comments' => $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = 'trash'")
+            'revisions' => wp_cache_get($cache_key_revisions, 'site_fastify'),
+            'trash_posts' => wp_cache_get($cache_key_trash_posts, 'site_fastify'),
+            'spam_comments' => wp_cache_get($cache_key_spam_comments, 'site_fastify'),
+            'trash_comments' => wp_cache_get($cache_key_trash_comments, 'site_fastify'),
         ];
+
+        // If cache is empty (first time or cache expired), run the query and set the cache
+        if ($stats['revisions'] === false) {
+            $stats['revisions'] = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = 'revision'");
+            wp_cache_set($cache_key_revisions, $stats['revisions'], 'site_fastify', 3600); // Cache for 1 hour
+        }
+
+        if ($stats['trash_posts'] === false) {
+            $stats['trash_posts'] = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_status = 'trash'");
+            wp_cache_set($cache_key_trash_posts, $stats['trash_posts'], 'site_fastify', 3600); // Cache for 1 hour
+        }
+
+        if ($stats['spam_comments'] === false) {
+            $stats['spam_comments'] = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = 'spam'");
+            wp_cache_set($cache_key_spam_comments, $stats['spam_comments'], 'site_fastify', 3600); // Cache for 1 hour
+        }
+
+        if ($stats['trash_comments'] === false) {
+            $stats['trash_comments'] = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = 'trash'");
+            wp_cache_set($cache_key_trash_comments, $stats['trash_comments'], 'site_fastify', 3600); // Cache for 1 hour
+        }
+
         ?>
         <tr>
             <td><?php esc_html_e('Post/Page Revisions', 'site-fastify'); ?></td>

@@ -1,4 +1,4 @@
-<?php
+<?php 
 namespace Site_Fastify\Includes;
 
 class Site_Fastify_DB_Optimizer {
@@ -35,7 +35,7 @@ class Site_Fastify_DB_Optimizer {
 
     public function ajax_revisions_cleanup() {
         // Check nonce for security
-        if (!isset($_POST['nonce']) || !wp_verify_nonce(wp_unslash($_POST['nonce']), 'site_fastify_revisions_cleanup_nonce')) { // Use wp_unslash here
+        if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_key($_POST['nonce']), 'site_fastify_revisions_cleanup_nonce')) {
             wp_send_json_error(['message' => 'Nonce verification failed.']);
         }
     
@@ -53,7 +53,7 @@ class Site_Fastify_DB_Optimizer {
 
     public function ajax_trash_spam_cleanup() {
         // Check nonce for security
-        if (!isset($_POST['nonce']) || !wp_verify_nonce(wp_unslash($_POST['nonce']), 'site_fastify_trash_spam_cleanup_nonce')) { // Use wp_unslash here
+        if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_key($_POST['nonce']), 'site_fastify_trash_spam_cleanup_nonce')) {
             wp_send_json_error(['message' => 'Nonce verification failed.']);
         }
     
@@ -143,21 +143,21 @@ class Site_Fastify_DB_Optimizer {
             ", 'trash'));
         
             // Optionally, delete related metadata for comments and posts
-            $wpdb->query($wpdb->prepare("
+            $wpdb->query("
                 DELETE FROM $wpdb->commentmeta
                 WHERE comment_id NOT IN (
                     SELECT comment_id FROM $wpdb->comments
                 )
-            "));
-            $wpdb->query($wpdb->prepare("
+            ");
+            $wpdb->query("
                 DELETE FROM $wpdb->postmeta
                 WHERE post_id NOT IN (
                     SELECT ID FROM $wpdb->posts
                 )
-            "));
+            ");
         
             // Check if WP_DEBUG_LOG is enabled and log the results conditionally
-            if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log("Trash and spam cleanup executed: 
                     Spam comments deleted: $spam_comments_deleted, 
                     Trash comments deleted: $trash_comments_deleted, 
