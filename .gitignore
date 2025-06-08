@@ -1,0 +1,49 @@
+# === General ===
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+
+# === Node / React (frontend) ===
+node_modules/
+build/
+dist/
+.cache/
+.vite/
+*.env
+*.env.*
+
+# === Composer (if using PHP dependencies) ===
+vendor/
+composer.lock
+
+# === PHPUnit ===
+phpunit.xml
+phpunit.xml.dist
+.phpunit.result.cache
+tests/output/
+
+# === WordPress Plugin ===
+/*.zip
+/screenshot-*.png
+*.pot
+languages/*.mo
+languages/*.po
+
+# === IDE and OS Files ===
+.vscode/
+.idea/
+*.iml
+
+# === Git ===
+*.orig
+*.bak
+
+# === Local Dev Tools ===
+.env.local
+.env.development
+.env.production
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
