@@ -1,0 +1,45 @@
+{
+  "name": "arif/speed-mate",
+  "description": "A WordPress performance optimization plugin.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Arif",
+      "email": "tech.az.arif@gmail.com",
+      "homepage": "https://speed-mate.xyz",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=7.4 || ^8.0",
+    "composer/installers": "^2.3.0",
+    "tedivm/jshrink": "^1.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "Speed_Mate\\": "includes/classes/",
+      "Speed_Mate\\Functions\\": "includes/functions/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Speed_Mate\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit --bootstrap=tests/bootstrap.php tests"
+  },
+  "extra": {
+    "installer-paths": {
+      "wp-content/plugins/{$name}/": [
+        "type:wordpress-plugin"
+      ]
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true
+    }
+  }
+}
